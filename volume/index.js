@@ -206,7 +206,8 @@ module.exports = volume = {
         let fileData = this.getFileData('day');
         let chartData = fileData && this.handlerTimeData(fileData, 100);
         let {labels, series} = chartData;
-        let mediaId = await makeCharts(labels, [series]);
+        series = [series];
+        let mediaId = await makeCharts({labels, series, title: 'Huobi 24H Volume(U.M/usdt)'});
         if (mediaId) {
             return {
                 type: "image",

@@ -27,7 +27,7 @@ module.exports = fear = async (limit) => {
             //       url: 'http://118.24.53.67:8090/wechat/chart.html'
             //     }
             //   ];
-            let mediaId = await makeCharts(labels, [series]);
+            let mediaId = await makeCharts({labels, series: [series]});
             console.info('make media ID:', mediaId);
             if (mediaId) {
                 return {

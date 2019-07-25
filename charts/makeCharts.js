@@ -19,8 +19,10 @@ const filePath = '/home/www/wechat/';
 //   });
 // }
 
-module.exports = async (labels, series, name) => {
+module.exports = async ({labels, series, title = '', subtitle = ''}, fileName = 'chart.svg') => {
     const chartData = {
+        title,
+        subtitle,
         labels,
         series,
     };
@@ -30,20 +32,25 @@ module.exports = async (labels, series, name) => {
             fullWidth: true,
             chartPadding: 30,
         },
+        title: {
+            height: 50,
+            fill: "#4A5572"
+        },
     };
 
     const pngPath = './chartsImg/';
     if (!fs.existsSync(pngPath)) {
         fs.mkdirSync(pngPath);
     }
-    const fileName = name || `chart.svg`;
 
     // 生成svg
     let svgString = await chartistSvg('line', chartData, opts);
     svgString = svgString.replace('class="ct-chart-line">', '><rect width="100%" height="100%" style="fill:rgb(255,255,255)"/>');
     fs.writeFileSync(pngPath + fileName, svgString);
-    fs.writeFileSync(filePath + 'chart.svg', svgString);
-    // fs.writeFileSync(pngPath + 'chart.html', svgString);
+    fs.writeFileSync(pngPath + 'chart.html', svgString);
+    if (fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath + 'chart.svg', svgString);
+    }
 
     // svg 转 png
     const buffer = await svg2png(fs.readFileSync(pngPath + 'chart.svg'));
@@ -53,7 +60,7 @@ module.exports = async (labels, series, name) => {
     // 上传png图到微信临时空间，获得微信图像素材id
     try {
         const form = {
-            smfile: fs.createReadStream(pngPath + fileName),
+            smfile: fs.createReadStream(pngPath + 'temp.png'),
         };
         let token = await accessToken();
         let opt = {
