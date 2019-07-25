@@ -206,7 +206,7 @@ module.exports = volume = {
         let fileData = this.getFileData('day');
         let chartData = fileData && this.handlerTimeData(fileData, 100);
         let {labels, series} = chartData;
-        let mediaId = await makeCharts(labels, [series], './');
+        let mediaId = await makeCharts(labels, [series]);
         if (mediaId) {
             return {
                 type: "image",
