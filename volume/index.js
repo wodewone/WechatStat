@@ -220,4 +220,4 @@ module.exports = volume = {
     },
 };
 
-volume.getChartData();
+// volume.getChartData();

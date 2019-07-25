@@ -45,4 +45,4 @@ module.exports = fear = async (limit) => {
     }
 }
 
-fear(5);
+// fear(5);
