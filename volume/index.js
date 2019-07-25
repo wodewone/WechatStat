@@ -221,4 +221,6 @@ module.exports = volume = {
     },
 };
 
-// volume.getChartData();
+// (async ()=> {
+//     console.info(await volume.getChartData());
+// })();

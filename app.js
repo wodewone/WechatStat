@@ -38,10 +38,10 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
     if (msg.MsgType === 'text') {
         if (msg.Content.substr(0, 4) === 'fear') {
             let limit = +msg.Content.substr(4) || 1;
-            return fear(limit);
+            return await fear(limit);
         }
         if (msg.Content.includes('交易额')) {
-            return volume.getChartData();
+            return await volume.getChartData();
         }
         if (msg.Content === '历史记录') {
             return '还没有消息';
