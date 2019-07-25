@@ -37,11 +37,15 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
     console.info('=================================');
     if (msg.MsgType === 'text') {
         if (msg.Content.substr(0, 4) === 'fear') {
-            let limit = +msg.Content.substr(4) || 1;
+            let str = msg.Content.match(/[0-9]/g);
+            let limit = str ? +str.toString().replace(/,/g, '') : 1;
             return await fear(limit);
         }
-        if (msg.Content === '交易额' || msg.Content === 'volume') {
-            return await volume.getChartData();
+        if (msg.Content.includes('交易额') || msg.Content.includes('volume')) {
+            let data = msg.Content.split(/ +/g);
+            let limit = data[1] ? data[1].match(/[0-9]/g) : 10;
+            let offset = data[2] ? data[2].match(/[0-9]/g) : 1;
+            return await volume.getChartData(limit, offset);
         }
         if (msg.Content === '历史记录') {
             return '还没有消息';

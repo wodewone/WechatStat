@@ -140,6 +140,7 @@ module.exports = volume = {
     },
     /**
      * 处理数据源
+     * @param fileData      源数据
      * @param limit         数据量，条数
      * @param dateCount     数据频次，单位：min
      */
@@ -190,9 +191,9 @@ module.exports = volume = {
             }
         }
     },
-    async getChartData() {
+    async getChartData(limit, offset) {
         let fileData = this.getFileData('day');
-        let chartData = fileData && this.handlerTimeData(fileData, 100);
+        let chartData = fileData && this.handlerTimeData(fileData, limit, offset);
         let {labels, series} = chartData;
         series = [series];
         let mediaId = await makeCharts({labels, series, title: 'Huobi 24H Volume(U.M/usdt)'});
@@ -210,5 +211,5 @@ module.exports = volume = {
 };
 
 // (async ()=> {
-//     console.info(await volume.getChartData());
+//     console.info(await volume.getChartData(20, 3));
 // })();
