@@ -7,7 +7,7 @@ const makeCharts = require('../charts/makeCharts.js');
 
 const dataPath = path.join(__dirname, 'data');
 
-if (!fs.existsSync('data')) {
+if (!fs.existsSync(dataPath)) {
     fs.mkdirSync(dataPath);
 }
 
@@ -112,14 +112,14 @@ let checkData = {
 checkData.init();
 
 module.exports = volume = {
-    number2count(num){
-        if(num < 1000){
+    number2count(num) {
+        if (num < 1000) {
             return num;
         }
-        if(num < 1000000){
+        if (num < 1000000) {
             return parseInt(num / 1000) + 'k';
         }
-        if(num < 1000000000){
+        if (num < 1000000000) {
             return parseInt(num / 1000000) + 'm';
         }
         return parseInt(num / 1000000000) + 'b';
@@ -128,11 +128,11 @@ module.exports = volume = {
         return JSON.parse('[' + data + ']');
     },
     handlerDateFormat(time, index, total) {
-        if(total <= 10){
+        if (total <= 10) {
             return moment(time).format('MM-DD hh:mm');
         }
-        if(total <= 100){
-            if(!(index % 5)){
+        if (total <= 100) {
+            if (!(index % 5)) {
                 return moment(time).format('hh:mm');
             }
             return '';
@@ -159,7 +159,7 @@ module.exports = volume = {
         }
         return curData.reverse().reduce((so, cur, index) => {
             so.labels.push(this.handlerDateFormat(cur.time, index, limit));
-            so.series.push(parseInt(cur.data/1000000));
+            so.series.push(parseInt(cur.data / 1000000));
             return so;
         }, {
             labels: [],
@@ -171,7 +171,7 @@ module.exports = volume = {
         const dirName = path.join(dataPath, fileDir);
         const fileName = path.join(dirName, `${getDate()}.json`);
         if (type === 'day') {
-            if (fs.existsSync(dirName) && fs.existsSync(fileName)){
+            if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
                 return this.handlerFileData(fs.readFileSync(fileName));
             }
             return false;

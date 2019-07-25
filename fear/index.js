@@ -27,7 +27,7 @@ module.exports = fear = async (limit) => {
             //       url: 'http://118.24.53.67:8090/wechat/chart.html'
             //     }
             //   ];
-            let mediaId = await makeCharts({labels, series: [series]});
+            let mediaId = await makeCharts({labels, series: [series], title: 'Crypto Fear & Greed Index'});
             console.info('make media ID:', mediaId);
             if (mediaId) {
                 return {
@@ -43,6 +43,6 @@ module.exports = fear = async (limit) => {
             return `Crypto Fear & Greed Index: ${singleValue}`;
         }
     }
-}
+};
 
 // fear(5);
