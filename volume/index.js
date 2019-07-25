@@ -7,6 +7,10 @@ const makeCharts = require('../charts/makeCharts.js');
 
 const dataPath = path.join(__dirname, 'data');
 
+if (!fs.existsSync('data')) {
+    fs.mkdirSync(dataPath);
+}
+
 /**
  * get date
  * @param type ymd | ym | md
@@ -67,22 +71,6 @@ let checkData = {
             return false;
         }
     },
-    checkTempDir() {
-        try {
-            const dirName = path.join(dataPath, 'temp');
-            if (!fs.existsSync(dirName)) {
-                fs.mkdirSync(dirName);
-            }
-            const file = path.join(dirName, `temp.json`);
-            if (!fs.existsSync(file)) {
-                fs.writeFileSync(file, '');
-            }
-            return file;
-        } catch (e) {
-            console.warn('checkTempDir: ', e);
-            return false;
-        }
-    },
     async setFileDate() {
         let response = await this.getApiData();
         const fileName = this.checkFileDir();
@@ -90,7 +78,7 @@ let checkData = {
             let fileData = {
                 time: +new Date(),
                 data: response,
-            }
+            };
             let jsonStr = JSON.stringify(fileData);
             let fileLen = (fs.readFileSync(fileName) || '').toString().length;
             if (fileLen > 2) {

@@ -40,7 +40,7 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
             let limit = +msg.Content.substr(4) || 1;
             return await fear(limit);
         }
-        if (msg.Content.includes('交易额')) {
+        if (msg.Content === '交易额' || msg.Content === 'volume') {
             return await volume.getChartData();
         }
         if (msg.Content === '历史记录') {
