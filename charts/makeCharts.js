@@ -32,14 +32,17 @@ module.exports = async (labels, series, name) => {
         },
     };
 
-    const pngPath = './';
-    const fileName = name || ``;
+    const pngPath = './chartsImg/';
+    if (!fs.existsSync(pngPath)) {
+        fs.mkdirSync(pngPath);
+    }
+    const fileName = name || `chart.svg`;
 
     // 生成svg
     let svgString = await chartistSvg('line', chartData, opts);
     svgString = svgString.replace('class="ct-chart-line">', '><rect width="100%" height="100%" style="fill:rgb(255,255,255)"/>');
     fs.writeFileSync(pngPath + fileName, svgString);
-    fs.writeFileSync(filePath + fileName, svgString);
+    fs.writeFileSync(filePath + 'chart.svg', svgString);
     // fs.writeFileSync(pngPath + 'chart.html', svgString);
 
     // svg 转 png
