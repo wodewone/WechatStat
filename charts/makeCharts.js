@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const svg2png = require('svg2png');
 const chartistSvg = require('svg-chartist');
 const rp = require('request-promise');
@@ -20,16 +21,16 @@ const nginxPath = '/home/www/wechat/';
 // }
 
 /**
- * API 文档
- * https://itbilu.com/nodejs/npm/BkCASacpm.html
+ * API 文档 (https://itbilu.com/nodejs/npm/BkCASacpm.html)
  * @param labels    Y轴 坐标系
  * @param series    X轴 数据需为二维数组，可同时展示多组数据
  * @param title     图表标题
  * @param subtitle  图表副标题
- * @param [fileName]  生成图片文件名[可选]
- * @returns {Promise<boolean>}
+ * @param filePath  图片保存地址
+ * @param fileName  图片名
+ * @returns {Promise<*>}
  */
-module.exports = async ({local, labels, series, title = '', subtitle = ''}, fileName = 'chart') => {
+module.exports = async ({local, labels, series, title = '', subtitle = ''}, {filePath = './', fileName = 'chart'}) => {
     const chartData = {
         title,
         subtitle,
@@ -40,7 +41,12 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, file
     const opts = {
         options: {
             fullWidth: true,
-            chartPadding: 50,
+            chartPadding: {
+                top: 20,
+                right: 66,
+                bottom: 10,
+                left: 10
+            },
         },
         title: {
             height: 50,
@@ -51,7 +57,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, file
         },
     };
 
-    const filePath = './chartsImg/';
+    filePath = path.join(filePath, 'chartsImg/');
     const svgPathName = filePath + fileName + '.svg';
     const pngPathName = filePath + fileName + '.png';
     if (!fs.existsSync(filePath)) {
@@ -81,7 +87,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, file
     // 上传png图到微信临时空间，获得media_id
     try {
         const form = {
-            smfile: fs.createReadStream(filePath + 'temp.png'),
+            smfile: fs.createReadStream(pngPathName),
         };
         let token = await accessToken();
         let opt = {

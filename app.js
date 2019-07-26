@@ -30,7 +30,6 @@ app.use(async (msg, next)=>{
     }
 */
 app.use(wechat(config).middleware(async (msg, ctx, next) => {
-    console.info('wecahtMsg', msg);
     console.info('=================================');
     if (msg.MsgType === 'text') {
         if (msg.Content.substr(0, 4) === 'fear') {
@@ -41,8 +40,8 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
         if (msg.Content.includes('交易额') || msg.Content.includes('volume')) {
             let paramsArr = msg.Content.split(/ +/g);
             let options = {};
-            let periodArr = ['day', 'week', 'mounth'];
-            if(paramsArr.length === 2){
+            let periodArr = ['day', 'week', 'month'];
+            if(paramsArr.length === 2 && periodArr.includes(paramsArr[1])){
                 options.period = paramsArr[1]
             }else {
                 options.limit = paramsArr[1] ? paramsArr[1].match(/[0-9]/g) : 10;

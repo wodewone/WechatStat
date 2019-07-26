@@ -151,7 +151,7 @@ module.exports = volume = {
      * @returns {*}
      */
     handlerTimeData({period, limit, offset, date}) {
-        if(!this.periodArr.includes(period)){
+        if (!this.periodArr.includes(period)) {
             return false;
         }
         const fileData = this.getFileData(period, date);
@@ -229,7 +229,7 @@ module.exports = volume = {
             }
         }
     },
-    getChartSubTitle(period){
+    getChartSubTitle(period) {
         switch (period) {
             case 'day':
                 return `By Huobi: ${moment().format('YYYY-MM-DD')}`;
@@ -249,7 +249,14 @@ module.exports = volume = {
         let {labels, series} = chartData;
         series = [series];
         let subtitle = this.getChartSubTitle(period);
-        let mediaId = await makeCharts({local, labels, series, title: 'Huobi Volume(U. M/USDT)', subtitle}, 'volume');
+        let mediaId = await makeCharts({
+            local,
+            labels,
+            series,
+            title: 'Huobi Volume(U. M/USDT)',
+            subtitle
+        }, {filePath: __dirname, fileName: 'volume'});
+        console.info('Make volume media ID:', mediaId);
         if (mediaId) {
             return {
                 type: "image",

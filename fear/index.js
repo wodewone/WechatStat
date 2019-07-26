@@ -1,9 +1,22 @@
-const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const moment = require('moment');
 
 const makeCharts = require('../charts/makeCharts.js');
+
+
+function handlerDateFormat(time, index, total) {
+    if (total <= 15) {
+        return moment(time).format('YYYY-MM-DD');
+    }
+    if (total <= 30) {
+        return moment(time).format('MM-DD');
+    }
+    if (!(index % 3)) {
+        return moment(time).format('YY-MM-DD');
+    }
+    return '';
+}
 
 module.exports = fear = async (limit) => {
     let {data: {data}} = await axios.get(`https://api.alternative.me/fng/?limit=${limit}`);
@@ -11,11 +24,10 @@ module.exports = fear = async (limit) => {
     if (data) {
         let labels = [];
         let series = [];
-        data.forEach(item => {
-            let day = moment(item.timestamp * 1000).format('D');
+        data.forEach((item, index) => {
             singleValue = item.value + '';
-            item.time = moment(item.timestamp * 1000).format('YYYY-MM-DD hh:mm:ss');
-            labels.unshift(day * 1 === 1 ? `•${moment(item.timestamp * 1000).format('D')}` : day);
+            labels.unshift(handlerDateFormat(item.timestamp * 1000, index, data.length));
+            // labels.unshift(day * 1 === 1 ? `•${moment(item.timestamp * 1000).format('D')}` : day);
             series.unshift(item.value);
         });
         if (limit > 1) {
@@ -27,8 +39,12 @@ module.exports = fear = async (limit) => {
             //       url: 'http://118.24.53.67:8090/wechat/chart.html'
             //     }
             //   ];
-            let mediaId = await makeCharts({labels, series: [series], title: 'Crypto Fear & Greed Index'});
-            console.info('make media ID:', mediaId);
+            let mediaId = await makeCharts({
+                labels,
+                series: [series],
+                title: 'Crypto Fear & Greed Index'
+            }, {filePath: __dirname, fileName: 'fear'});
+            console.info('Make fear media ID:', mediaId);
             if (mediaId) {
                 return {
                     type: "image",
@@ -45,4 +61,4 @@ module.exports = fear = async (limit) => {
     }
 };
 
-// fear(5);
+// fear(50);
