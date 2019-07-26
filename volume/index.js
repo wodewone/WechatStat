@@ -13,20 +13,20 @@ if (!fs.existsSync(dataPath)) {
 
 /**
  * get date
- * @param type ymd | ym | md
+ * @param format YYYY MM DD
+ * @param date 日期
  * @returns {string}
  */
-function getDate(type = 'ymd') {
-    let dateTime = new Date();
-    let y = dateTime.getFullYear().toString();
-    let m = dateTime.getMonth() < 10 ? '0' + dateTime.getMonth() : dateTime.getMonth();
-    let d = dateTime.getDate().toString();
-    if (type === 'ymd')
-        return y + m + d;
-    if (type === 'ym')
-        return y + m;
-    if (type === 'md')
-        returnm + d
+function getDateType(format = 'YYYYMMDD', date) {
+    try {
+        if (date && moment(date).isValid()) {
+            return moment(date).format(format);
+        } else {
+            return moment().format(format);
+        }
+    } catch (e) {
+        return moment().format(format);
+    }
 }
 
 let getters = {
@@ -56,12 +56,12 @@ let getters = {
 let checkData = {
     checkFileDir() {
         try {
-            const fileDir = getDate('ym');
+            const fileDir = getDateType('YYYYMM');
             const dirName = path.join(dataPath, fileDir);
             if (!fs.existsSync(dirName)) {
                 fs.mkdirSync(dirName);
             }
-            const file = path.join(dirName, `${getDate()}.json`);
+            const file = path.join(dirName, `${getDateType()}.json`);
             if (!fs.existsSync(file)) {
                 fs.writeFileSync(file, '');
             }
@@ -104,7 +104,7 @@ let checkData = {
         }, 1000 * 60);
     },
     init() {
-        console.info('Start time & recorded data!');
+        console.info('>Stat< start huobi volume & recorded data!');
         this.timeEvent();
     },
 };
@@ -112,6 +112,7 @@ let checkData = {
 checkData.init();
 
 module.exports = volume = {
+    periodArr: ['day', 'week', 'month'],
     number2count(num) {
         if (num < 1000) {
             return num;
@@ -128,8 +129,11 @@ module.exports = volume = {
         return JSON.parse('[' + data + ']');
     },
     handlerDateFormat(time, index, total) {
-        if (total <= 10) {
+        if (total <= 15) {
             return moment(time).format('MM-DD hh:mm');
+        }
+        if (total <= 30) {
+            return moment(time).format('hh:mm');
         }
         if (total <= 100) {
             if (!(index % 5)) {
@@ -140,18 +144,28 @@ module.exports = volume = {
     },
     /**
      * 处理数据源
-     * @param fileData      源数据
+     * @param period        统计周期
      * @param limit         数据量，条数
-     * @param dateCount     数据频次，单位：min
+     * @param offset        数据频次，单位：min
+     * @param date          数据日期
+     * @returns {*}
      */
-    handlerTimeData(fileData, limit = 10, dataCount = 1) {
+    handlerTimeData({period, limit, offset, date}) {
+        if(!this.periodArr.includes(period)){
+            return false;
+        }
+        const fileData = this.getFileData(period, date);
         if (!fileData || !fileData.length) {
             return false;
+        }
+        if (period !== 'day' && fileData) {
+            limit = fileData.length;
+            offset = 1;
         }
         let curData = [];
         let dataLen = fileData.length;
         for (let i = 0; i < limit; i++) {
-            let item = fileData[dataLen - 1 - dataCount * i];
+            let item = fileData[dataLen - 1 - offset * i];
             if (item) {
                 curData.push(item);
             } else {
@@ -167,36 +181,75 @@ module.exports = volume = {
             series: [],
         });
     },
-    getFileData(type = 'day', date) {
-        const fileDir = getDate('ym');
+    handlerAveData(data, datetime) {
+        if (data && data.length) {
+            const total = data.reduce((so, cur) => {
+                return +cur.data + so;
+            }, 0);
+            if (typeof total === 'number') {
+                return {
+                    time: datetime,
+                    data: total / data.length
+                }
+            }
+        }
+        return false;
+    },
+    getFileData(period, date) {
+        const fileDir = getDateType('YYYYMM', date);
         const dirName = path.join(dataPath, fileDir);
-        const fileName = path.join(dirName, `${getDate()}.json`);
-        if (type === 'day') {
+
+        if (period === 'day') {
+            const fileName = path.join(dirName, `${getDateType('YYYYMMDD', date)}.json`);
             if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
                 return this.handlerFileData(fs.readFileSync(fileName));
             }
             return false;
         }
-        if (type === 'mounth') {
-            if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
+
+        const filePeriod = {
+            week: 7,
+            month: 30
+        };
+        const periodLen = filePeriod[period] || false;
+        if (periodLen) {
+            if (fs.existsSync(dirName)) {
                 const dataArr = fs.readdirSync(dirName);
-                let data = [];
-                dataArr.length && dataArr.map((fileName) => {
+                let response = [];
+                dataArr.length && dataArr.reverse().slice(0, periodLen).map((fileName) => {
                     if (fileName.includes('.json')) {
                         const file = fs.readFileSync(path.join(dirName, fileName));
-                        data.push(this.handlerFileData(file));
+                        const data = this.handlerAveData(this.handlerFileData(file), fileName.split('.')[0]);
+                        if (data) {
+                            response.push(data)
+                        }
                     }
                 });
-                return data;
+                return response;
             }
         }
     },
-    async getChartData(limit, offset) {
-        let fileData = this.getFileData('day');
-        let chartData = fileData && this.handlerTimeData(fileData, limit, offset);
+    getChartSubTitle(period){
+        switch (period) {
+            case 'day':
+                return `By Huobi: ${moment().format('YYYY-MM-DD')}`;
+            case 'week':
+                return `Last week's data`;
+            case 'month':
+                return `Last month's data`;
+            default:
+                return '';
+        }
+    },
+    async getChartData({period = 'day', limit = 10, offset = 1, date = '', local}) {
+        let chartData = this.handlerTimeData({period, limit, offset, date});
+        if (!chartData) {
+            return '没有找到相关数据，请检查数据正确性……';
+        }
         let {labels, series} = chartData;
         series = [series];
-        let mediaId = await makeCharts({labels, series, title: 'Huobi 24H Volume(U.M/usdt)'});
+        let subtitle = this.getChartSubTitle(period);
+        let mediaId = await makeCharts({local, labels, series, title: 'Huobi Volume(U. M/USDT)', subtitle}, 'volume');
         if (mediaId) {
             return {
                 type: "image",
@@ -210,6 +263,6 @@ module.exports = volume = {
     },
 };
 
-// (async ()=> {
-//     console.info(await volume.getChartData(20, 3));
+// (async () => {
+//     console.info(await volume.getChartData({period: 'week', local: 1}));
 // })();
