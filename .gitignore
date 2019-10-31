@@ -8,6 +8,6 @@ node_modules/
 .idea
 .DS_Store
 .dog
-*/.dog
+*.dog
 chartsImg
 volume/data/*
