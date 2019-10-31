@@ -2,8 +2,9 @@ const Koa = require('koa');
 const wechat = require('co-wechat');
 const router = require('koa-router')();
 
-const volume = require('./volume/');
-const fear = require('./fear/');
+const volume = require('./volume');
+const fear = require('./fear');
+const market = require('./market');
 
 const port = 8088;
 const app = new Koa();
@@ -17,7 +18,7 @@ const config = {
 
 /**
  *
-app.use(async (msg, next)=>{
+ app.use(async (msg, next)=>{
     console.info('ctx', ctx);
     @ msg request content
     {
@@ -28,32 +29,30 @@ app.use(async (msg, next)=>{
         Content: 'fear',
         MsgId: '22267881023320195'
     }
-*/
+ */
 app.use(wechat(config).middleware(async (msg, ctx, next) => {
     console.info('=================================');
     if (msg.MsgType === 'text') {
-        if (msg.Content.substr(0, 4) === 'fear') {
-            let str = msg.Content.match(/[0-9]/g);
-            let limit = str ? +str.toString().replace(/,/g, '') : 1;
-            return await fear(limit);
+        const title = msg.Content || '';
+        if (title.includes('fear')) {
+            let limit = title.match(/[0-9]+/g);
+            return await fear.getFearChart({limit});
         }
-        if (msg.Content.includes('交易额') || msg.Content.includes('volume')) {
-            let paramsArr = msg.Content.split(/ +/g);
-            let options = {};
+        if (title.includes('交易额') || title.includes('volume')) {
             let periodArr = ['day', 'week', 'month'];
-            if(paramsArr[1] && periodArr.includes(paramsArr[1])){
-                options.period = paramsArr[1]
-            }else {
-                options.limit = paramsArr[1] ? paramsArr[1].match(/[0-9]/g) : 10;
-                options.offset = paramsArr[2] ? paramsArr[2].match(/[0-9]/g) : 1;
-                options.date = paramsArr[3] ? paramsArr[3] : '';
-            }
-            return await volume.getChartData(options);
+
+            const period = periodArr.includes(title.split(/ +/g)[1]) || 'day';
+            const limit = title.match(/[0-9]+/g)[0] || 10;
+            const density = title.match(/[0-9]+/g)[1] || 1;
+            return await volume.getChart({period, limit, density});
         }
-        if (msg.Content === '历史记录') {
+        if (title.includes('行情') || title.includes('market')) {
+            return await market.getChart(title.match(/[0-9]+/g) || 7);
+        }
+        if (title === '历史记录') {
             return '还没有消息';
         }
-        if (msg.Content === '域名') {
+        if (title === '域名') {
             return 'http://118.24.53.67:8090/'
         }
     }

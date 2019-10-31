@@ -70,7 +70,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
     fs.writeFileSync(svgPathName, svgString);
     // fs.writeFileSync(filePath + 'chart.html', svgString);
 
-    // 备份到到 Nginx 路径下
+    // 备份到 Nginx 路径下
     // 可以通过域名访问
     if (fs.existsSync(nginxPath)) {
         fs.writeFileSync(nginxPath + fileName + '.svg', svgString);

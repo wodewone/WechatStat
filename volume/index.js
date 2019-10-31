@@ -129,9 +129,9 @@ module.exports = volume = {
         return JSON.parse('[' + data + ']');
     },
     handlerDateFormat({time, period, index, total}) {
-	if(['week', 'month'].includes(period)){
-		return moment(time).format('MM-DD');
-	}
+        if (['week', 'month'].includes(period)) {
+            return moment(time).format('MM-DD');
+        }
         if (total <= 15) {
             return moment(time).format('MM-DD hh:mm');
         }
@@ -149,38 +149,38 @@ module.exports = volume = {
      * 处理数据源
      * @param period        统计周期
      * @param limit         数据量，条数
-     * @param offset        数据频次，单位：min
+     * @param density        数据频次，单位：min
      * @param date          数据日期
      * @returns {*}
      */
-    handlerTimeData({period, limit, offset, date}) {
+    getChartData({period = 'day', limit = 10, density = 1, date = ''}) {
         if (!this.periodArr.includes(period)) {
-            return false;
+            return {};
         }
-        const fileData = this.getFileData(period, date);
+        const fileData = this.getFileData({period, limit, date});
         if (!fileData || !fileData.length) {
-            return false;
+            return {};
         }
         if (period !== 'day' && fileData) {
             limit = fileData.length;
-            offset = 1;
+            density = 1;
         }
         let curData = [];
         let dataLen = fileData.length;
         for (let i = 0; i < limit; i++) {
-            let item = fileData[dataLen - 1 - offset * i];
+            let item = fileData[dataLen - 1 - density * i];
             if (item) {
                 curData.push(item);
             } else {
                 break;
             }
         }
-	if(period === 'day'){
-		curData = curData.reverse();
-	}
+        if (period === 'day') {
+            curData = curData.reverse();
+        }
         return curData.reduce((so, cur, index) => {
-		const {time} = cur;
-            so.labels.push(this.handlerDateFormat({time, period, index, total:limit}));
+            const {time} = cur;
+            so.labels.push(this.handlerDateFormat({time, period, index, total: limit}));
             so.series.push(parseInt(cur.data / 1000000));
             return so;
         }, {
@@ -202,7 +202,7 @@ module.exports = volume = {
         }
         return false;
     },
-    getFileData(period, date) {
+    getFileData({period, limit, date}) {
         const fileDir = getDateType('YYYYMM', date);
         const dirName = path.join(dataPath, fileDir);
 
@@ -218,7 +218,7 @@ module.exports = volume = {
             week: 7,
             month: 30
         };
-        const periodLen = filePeriod[period] || false;
+        const periodLen = limit || filePeriod[period] || false;
         if (periodLen) {
             if (fs.existsSync(dirName)) {
                 const dataArr = fs.readdirSync(dirName);
@@ -248,22 +248,20 @@ module.exports = volume = {
                 return '';
         }
     },
-    async getChartData({period = 'day', limit = 10, offset = 1, date = '', local}) {
-        let chartData = this.handlerTimeData({period, limit, offset, date});
-        if (!chartData) {
+    async getChart({period, limit, density, date, local}) {
+        let {labels, series} = this.getChartData({period, limit, density, date});
+        if (!series) {
             return '没有找到相关数据，请检查数据正确性……';
         }
-        let {labels, series} = chartData;
-        series = [series];
         let subtitle = this.getChartSubTitle(period);
         let mediaId = await makeCharts({
             local,
             labels,
-            series,
+            series: [series],
             title: 'Huobi Volume(U. M/USDT)',
             subtitle
         }, {filePath: __dirname, fileName: 'volume'});
-        console.info('Make volume media ID:', mediaId);
+        // console.info('Make volume media ID:', mediaId);
         if (mediaId) {
             return {
                 type: "image",
@@ -274,7 +272,7 @@ module.exports = volume = {
         } else {
             return '服务器有问题，请查看……';
         }
-    },
+    }
 };
 
 // (async () => {
