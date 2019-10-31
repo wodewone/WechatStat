@@ -25,7 +25,7 @@ module.exports = fear = {
         let labels = [];
         let series = [];
         if (data.length) {
-            data.reverse.forEach((item, index) => {
+            data.reverse().forEach((item, index) => {
                 labels.push(this.handlerDateFormat(item.timestamp * 1000, index, data.length));
                 series.push(item.value);
             });
