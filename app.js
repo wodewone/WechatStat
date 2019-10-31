@@ -41,7 +41,7 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
             let paramsArr = msg.Content.split(/ +/g);
             let options = {};
             let periodArr = ['day', 'week', 'month'];
-            if(paramsArr.length === 2 && periodArr.includes(paramsArr[1])){
+            if(paramsArr[1] && periodArr.includes(paramsArr[1])){
                 options.period = paramsArr[1]
             }else {
                 options.limit = paramsArr[1] ? paramsArr[1].match(/[0-9]/g) : 10;

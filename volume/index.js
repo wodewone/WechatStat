@@ -89,7 +89,7 @@ let checkData = {
     },
     async getApiData() {
         try {
-            const {data: {data}} = await axios.get(`https://www.huobi.br.com/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
+            const {data: {data}} = await axios.get(`https://www.huobi.vn/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
             if (data) {
                 return data;
             }
@@ -128,7 +128,10 @@ module.exports = volume = {
     handlerFileData(data) {
         return JSON.parse('[' + data + ']');
     },
-    handlerDateFormat(time, index, total) {
+    handlerDateFormat({time, period, index, total}) {
+	if(['week', 'month'].includes(period)){
+		return moment(time).format('MM-DD');
+	}
         if (total <= 15) {
             return moment(time).format('MM-DD hh:mm');
         }
@@ -172,8 +175,12 @@ module.exports = volume = {
                 break;
             }
         }
-        return curData.reverse().reduce((so, cur, index) => {
-            so.labels.push(this.handlerDateFormat(cur.time, index, limit));
+	if(period === 'day'){
+		curData = curData.reverse();
+	}
+        return curData.reduce((so, cur, index) => {
+		const {time} = cur;
+            so.labels.push(this.handlerDateFormat({time, period, index, total:limit}));
             so.series.push(parseInt(cur.data / 1000000));
             return so;
         }, {
