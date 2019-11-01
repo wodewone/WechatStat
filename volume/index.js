@@ -14,7 +14,7 @@ if (!fs.existsSync(dataPath)) {
 /**
  * get date
  * @param format YYYY MM DD
- * @param date 日期
+ * @param date 日期 (格式 20190101 || 2019-01-01 || 2019/01/01)
  * @returns {string}
  */
 function getDateType(format = 'YYYYMMDD', date) {
@@ -147,13 +147,14 @@ module.exports = volume = {
     },
     /**
      * 处理数据源
-     * @param period        统计周期
+     * @param period        统计周期    [min, day, week, month]
+     *        min 可以
      * @param limit         数据量，条数
      * @param density        数据频次，单位：min
      * @param date          数据日期
      * @returns {*}
      */
-    getChartData({period = 'day', limit = 10, density = 1, date = ''}) {
+    getChartData({period = 'min', limit = 10, density = 1, date = ''}) {
         if (!this.periodArr.includes(period)) {
             return {};
         }
@@ -161,13 +162,10 @@ module.exports = volume = {
         if (!fileData || !fileData.length) {
             return {};
         }
-        if (period !== 'day' && fileData) {
-            limit = fileData.length;
-            density = 1;
-        }
+        const dataLen = fileData.length;
         let curData = [];
-        let dataLen = fileData.length;
-        for (let i = 0; i < limit; i++) {
+        for (let i = 0; i < dataLen; i++) {
+            // 如果找不到文件那就取消遍历
             let item = fileData[dataLen - 1 - density * i];
             if (item) {
                 curData.push(item);
@@ -175,13 +173,14 @@ module.exports = volume = {
                 break;
             }
         }
-        if (period === 'day') {
+        if (period === 'min') {
             curData = curData.reverse();
         }
         return curData.reduce((so, cur, index) => {
             const {time} = cur;
             so.labels.push(this.handlerDateFormat({time, period, index, total: limit}));
-            so.series.push(parseInt(cur.data / 1000000));
+            // 处理数据单位为亿
+            so.series.push((cur.data / 100000000).toFixed(4));
             return so;
         }, {
             labels: [],
@@ -206,7 +205,7 @@ module.exports = volume = {
         const fileDir = getDateType('YYYYMM', date);
         const dirName = path.join(dataPath, fileDir);
 
-        if (period === 'day') {
+        if (period === 'min') {
             const fileName = path.join(dirName, `${getDateType('YYYYMMDD', date)}.json`);
             if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
                 return this.handlerFileData(fs.readFileSync(fileName));
