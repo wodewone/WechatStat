@@ -4,8 +4,8 @@ const makeCharts = require('../charts/makeCharts.js');
 
 module.exports = market = {
     async getChart(limit = 7){
-        const {labels, series: _vol} = await volume.getChartData({limit});
-        const {series: _fear} = await fear.getFearData(limit);
+        const {series: _vol} = await volume.getChartData({limit});
+        const {labels, series: _fear} = await fear.getFearData(limit);
         let mediaId = await makeCharts({
             labels,
             series: [[], _vol, _fear],

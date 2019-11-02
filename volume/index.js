@@ -248,8 +248,10 @@ module.exports = volume = {
     },
     getChartSubTitle(period, date) {
         switch (period) {
+            case 'min':
+                return `By Huobi: ${moment(date || new Date()).format('YYYY-MM-DD')}`;
             case 'day':
-                return `By Huobi: ${moment(date || '').format('YYYY-MM-DD')}`;
+                return `By Huobi: ${moment().format('YYYY-MM-DD')}`;
             case 'week':
                 return `Last week's data`;
             case 'month':
@@ -286,5 +288,5 @@ module.exports = volume = {
 };
 
  //(async () => {
- //    console.info(await volume.getChart({period: 'min', local: 1}));
+ //    console.info(111, await volume.getChart({period: 'day', limit: 10, density: 1, date: '', local: 1}));
  //})();
