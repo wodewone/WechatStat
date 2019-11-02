@@ -223,10 +223,16 @@ module.exports = volume = {
         const periodLen = limit || filePeriod[period] || 10;
         let response = [];
         if (fs.existsSync(dirName)) {
-            const dataArr = fs.readdirSync(dirName);
+            let dataArr = fs.readdirSync(dirName) || [];
+            if(dataArr.length < limit){
+                const prevDirName = path.join(dataPath, moment().month(moment().month() - 1).startOf('month').format('YYYYMM'));
+                const prevDataArr = fs.readdirSync(prevDirName) || [];
+                dataArr = [...prevDataArr.slice(-(limit - dataArr.length)), ...dataArr];
+            }
             dataArr.length && dataArr.reverse().slice(0, periodLen).map((fileName) => {
                 if (fileName.includes('.json')) {
-                    const file = fs.readFileSync(path.join(dirName, fileName));
+                    const dir = path.join(dataPath, fileName.substr(0, 6));
+                    const file = fs.readFileSync(path.join(dir, fileName));
                     const data = this.handlerAveData(this.handlerFileData(file), fileName.split('.')[0]);
                     if (data) {
                         response.push(data)
