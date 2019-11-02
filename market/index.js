@@ -4,11 +4,10 @@ const makeCharts = require('../charts/makeCharts.js');
 
 module.exports = market = {
     async getChart(limit = 7){
-        const {series: _vol} = await volume.getChartData({limit});
-        console.info(1911, _vol);
+        const {labels, series: _vol} = await volume.getChartData({limit});
         const {series: _fear} = await fear.getFearData(limit);
         let mediaId = await makeCharts({
-            labels: [],
+            labels,
             series: [[], _vol, _fear],
             title: 'Fear.Greed & Exchange volume'
         }, {filePath: __dirname, fileName: 'fear'});
