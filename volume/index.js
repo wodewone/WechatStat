@@ -220,23 +220,21 @@ module.exports = volume = {
             week: 7,
             month: 30
         };
-        const periodLen = limit || filePeriod[period] || false;
-        if (periodLen) {
-            if (fs.existsSync(dirName)) {
-                const dataArr = fs.readdirSync(dirName);
-                let response = [];
-                dataArr.length && dataArr.reverse().slice(0, periodLen).map((fileName) => {
-                    if (fileName.includes('.json')) {
-                        const file = fs.readFileSync(path.join(dirName, fileName));
-                        const data = this.handlerAveData(this.handlerFileData(file), fileName.split('.')[0]);
-                        if (data) {
-                            response.push(data)
-                        }
+        const periodLen = limit || filePeriod[period] || 10;
+        let response = [];
+        if (fs.existsSync(dirName)) {
+            const dataArr = fs.readdirSync(dirName);
+            dataArr.length && dataArr.reverse().slice(0, periodLen).map((fileName) => {
+                if (fileName.includes('.json')) {
+                    const file = fs.readFileSync(path.join(dirName, fileName));
+                    const data = this.handlerAveData(this.handlerFileData(file), fileName.split('.')[0]);
+                    if (data) {
+                        response.push(data)
                     }
-                });
-                return response;
-            }
+                }
+            });
         }
+        return response;
     },
     getChartSubTitle(period) {
         switch (period) {
@@ -260,7 +258,7 @@ module.exports = volume = {
             local,
             labels,
             series: [series],
-            title: 'Huobi Volume(U. M/USDT)',
+            title: 'Huobi Volume(U. 100m/USDT)',
             subtitle
         }, {filePath: __dirname, fileName: 'volume'});
         // console.info('Make volume media ID:', mediaId);
@@ -277,6 +275,6 @@ module.exports = volume = {
     }
 };
 
-// (async () => {
-//     console.info(await volume.getChartData({period: 'week', local: 1}));
-// })();
+ (async () => {
+     console.info(await volume.getChart({period: 'week', local: 1}));
+ })();
