@@ -129,7 +129,7 @@ module.exports = volume = {
         return JSON.parse('[' + data + ']');
     },
     handlerDateFormat({time, period, index, total}) {
-        if (['week', 'month'].includes(period)) {
+        if (['day', 'week', 'month'].includes(period)) {
             return moment(time).format('MM-DD');
         }
         if (total <= 15) {
