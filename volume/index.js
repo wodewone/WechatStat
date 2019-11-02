@@ -112,7 +112,7 @@ let checkData = {
 checkData.init();
 
 module.exports = volume = {
-    periodArr: ['day', 'week', 'month'],
+    periodArr: ['min', 'day', 'week', 'month'],
     number2count(num) {
         if (num < 1000) {
             return num;
@@ -155,6 +155,10 @@ module.exports = volume = {
      * @returns {*}
      */
     getChartData({period = 'day', limit = 10, density = 1, date = ''}) {
+        //period = period || 'day';
+        //limit = limit || 10;
+        //density = density || 1;
+        //date = date || '';
         if (!this.periodArr.includes(period)) {
             return {};
         }
@@ -242,10 +246,10 @@ module.exports = volume = {
         }
         return response;
     },
-    getChartSubTitle(period) {
+    getChartSubTitle(period, date) {
         switch (period) {
             case 'day':
-                return `By Huobi: ${moment().format('YYYY-MM-DD')}`;
+                return `By Huobi: ${moment(date || '').format('YYYY-MM-DD')}`;
             case 'week':
                 return `Last week's data`;
             case 'month':
@@ -259,7 +263,7 @@ module.exports = volume = {
         if (!series) {
             return '没有找到相关数据，请检查数据正确性……';
         }
-        let subtitle = this.getChartSubTitle(period);
+        let subtitle = this.getChartSubTitle(period, date);
         let mediaId = await makeCharts({
             local,
             labels,
@@ -282,5 +286,5 @@ module.exports = volume = {
 };
 
  //(async () => {
- //    console.info(await volume.getChart({period: 'week', local: 1}));
+ //    console.info(await volume.getChart({period: 'min', local: 1}));
  //})();
