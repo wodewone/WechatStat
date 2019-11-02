@@ -9,7 +9,8 @@ module.exports = market = {
         let mediaId = await makeCharts({
             labels,
             series: [[], _vol, _fear],
-            title: 'Fear.Greed & Exchange volume'
+            title: 'Fear.Greed & Exchange volume',
+            subtitle: 'orange = fear.greed. red = volume.',
         }, {filePath: __dirname, fileName: 'fear'});
         if (mediaId) {
             return {
