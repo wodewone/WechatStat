@@ -22,6 +22,6 @@ module.exports = market = {
     }
 };
 
-(async () => {
-    console.info(await market.getChart(7));
-})();
+//(async () => {
+//    console.info(await market.getChart(7));
+//})();
