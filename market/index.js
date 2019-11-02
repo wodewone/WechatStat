@@ -2,7 +2,7 @@ const volume = require("../volume");
 const fear = require("../fear");
 const makeCharts = require('../charts/makeCharts.js');
 
-module.exports = const market = {
+module.exports = market = {
     async getChart(limit){
         const {series: _vol} = await volume.getChartData({limit});
         const {series: _fear} = await fear.getFearData(limit);
