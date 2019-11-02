@@ -148,15 +148,18 @@ module.exports = volume = {
     /**
      * 处理数据源
      * @param period        统计周期    [min, day, week, month]
-     *        min 可以
+     *        min
      * @param limit         数据量，条数
      * @param density        数据频次，单位：min
-     * @param date          数据日期
+     * @param date          数据日期    period = min时传入date有效
      * @returns {*}
      */
     getChartData({period = 'min', limit = 10, density = 1, date = ''}) {
         if (!this.periodArr.includes(period)) {
             return {};
+        }
+        if (period !== 'min') {
+            date = '';
         }
         const fileData = this.getFileData({period, limit, date});
         if (!fileData || !fileData.length) {
@@ -165,7 +168,7 @@ module.exports = volume = {
         const dataLen = fileData.length;
         let curData = [];
         for (let i = 0; i < dataLen; i++) {
-            // 如果找不到文件那就取消遍历
+            // 如果找不到文件则中断
             let item = fileData[dataLen - 1 - density * i];
             if (item) {
                 curData.push(item);
