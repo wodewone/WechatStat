@@ -155,7 +155,6 @@ module.exports = volume = {
      * @returns {*}
      */
     getChartData({period = 'day', limit = 10, density = 1, date = ''}) {
-        console.info(981, {period, limit, density, date});
         if (!this.periodArr.includes(period)) {
             return {};
         }
