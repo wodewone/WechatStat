@@ -45,7 +45,7 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
             const params = title.match(/[0-9]+/g) || [];
             const limit = params[0] || 10;
             const density = params[1] || 1;
-            const date = title.params[2] || '';
+            const date = params[2] || '';
             return await volume.getChart({period, limit, density, date});
         }
         if (title.includes('行情') || title.includes('market')) {
