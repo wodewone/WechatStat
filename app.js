@@ -35,7 +35,7 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
     if (msg.MsgType === 'text') {
         const title = msg.Content || '';
         if (title.includes('fear')) {
-            let limit = title.match(/[0-9]+/g);
+            let limit = title.match(/[0-9]+/g) || 1;
             return await fear.getFearChart({limit});
         }
         if (title.includes('交易额') || title.includes('volume')) {
