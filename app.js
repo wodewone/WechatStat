@@ -49,7 +49,7 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
             return await volume.getChart({period, limit, density, date});
         }
         if (title.includes('行情') || title.includes('market')) {
-            return await market.getChart(title.match(/[0-9]+/g) || 7);
+            return await market.getChart(title.match(/[0-9]+/g));
         }
         if (title === '历史记录') {
             return '还没有消息';

@@ -154,7 +154,8 @@ module.exports = volume = {
      * @param date          数据日期    period = min时传入date有效
      * @returns {*}
      */
-    getChartData({period = 'min', limit = 10, density = 1, date = ''}) {
+    getChartData({period = 'day', limit = 10, density = 1, date = ''}) {
+        console.info(981, {period, limit, density, date});
         if (!this.periodArr.includes(period)) {
             return {};
         }
@@ -281,6 +282,6 @@ module.exports = volume = {
     }
 };
 
- (async () => {
-     console.info(await volume.getChart({period: 'week', local: 1}));
- })();
+ //(async () => {
+ //    console.info(await volume.getChart({period: 'week', local: 1}));
+ //})();
