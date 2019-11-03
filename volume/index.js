@@ -133,14 +133,14 @@ module.exports = volume = {
             return moment(time).format('MM-DD');
         }
         if (total <= 15) {
-            return moment(time).format('MM-DD hh:mm');
+            return moment(time).format(period === 'min' ? 'MM-DD hh:mm' : 'MM-DD');
         }
         if (total <= 30) {
-            return moment(time).format('hh:mm');
+            return moment(time).format(period === 'min' ? 'hh:mm' : 'MM-DD');
         }
         if (total <= 100) {
             if (!(index % 5)) {
-                return moment(time).format('hh:mm');
+                return moment(time).format(period === 'min' ? 'hh:mm' : 'MM-DD');
             }
             return '';
         }
