@@ -154,7 +154,7 @@ module.exports = volume = {
      * @param date          数据日期    period = min时传入date有效
      * @returns {*}
      */
-    getChartData({period = 'day', limit = 10, density = 1, date = ''}) {
+        getChartData({period = 'day', limit = 10, density = 1, date = ''}) {
         //period = period || 'day';
         //limit = limit || 10;
         //density = density || 1;
@@ -227,12 +227,8 @@ module.exports = volume = {
         const periodLen = limit || filePeriod[period] || 10;
         let response = [];
         if (fs.existsSync(dirName)) {
-            let dataArr = fs.readdirSync(dirName) || [];
-            if(dataArr.length < limit){
-                const prevDirName = path.join(dataPath, moment().month(moment().month() - 1).startOf('month').format('YYYYMM'));
-                const prevDataArr = fs.readdirSync(prevDirName) || [];
-                dataArr = [...prevDataArr.slice(-(limit - dataArr.length)), ...dataArr];
-            }
+            let dataArr = this.getMonthFile({dirName, limit});
+
             dataArr.length && dataArr.reverse().slice(0, periodLen).map((fileName) => {
                 if (fileName.includes('.json')) {
                     const dir = path.join(dataPath, fileName.substr(0, 6));
@@ -246,12 +242,25 @@ module.exports = volume = {
         }
         return response;
     },
-    getChartSubTitle(period, date) {
+    getMonthFile({dirName, limit, index = 1, data}) {
+        let dataArr = data || fs.readdirSync(dirName) || [];
+        if (dataArr.length < limit) {
+            const prevDirName = path.join(dataPath, moment().month(moment().month() - index).startOf('month').format('YYYYMM'));
+            const prevDataArr = fs.readdirSync(prevDirName) || [];
+            dataArr = [...prevDataArr.slice(-(limit - dataArr.length)), ...dataArr];
+            if (dataArr.length < limit) {
+                return this.getMonthFile({dirName, limit, index: index + 1, data: dataArr});
+            }
+        }
+        return dataArr;
+    },
+    getChartSubTitle(period, labels, date) {
         switch (period) {
             case 'min':
                 return `By Huobi: ${moment(date || new Date()).format('YYYY-MM-DD')}`;
             case 'day':
-                return `By Huobi: ${moment().format('YYYY-MM-DD')}`;
+                const range = `${labels[0]} to ${labels[labels.length - 1]}`;
+                return `By Huobi: ${range}`;
             case 'week':
                 return `Last week's data`;
             case 'month':
@@ -265,7 +274,7 @@ module.exports = volume = {
         if (!series) {
             return '没有找到相关数据，请检查数据正确性……';
         }
-        let subtitle = this.getChartSubTitle(period, date);
+        let subtitle = this.getChartSubTitle(period, labels, date);
         let mediaId = await makeCharts({
             local,
             labels,
@@ -287,6 +296,6 @@ module.exports = volume = {
     }
 };
 
- //(async () => {
- //    console.info(111, await volume.getChart({period: 'day', limit: 10, density: 1, date: '', local: 1}));
- //})();
+//(async () => {
+//    console.info(111, await volume.getChart({period: 'day', limit: 20, density: 1, date: '', local: 1}));
+//})();
