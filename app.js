@@ -39,9 +39,7 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
             return await fear.getFearChart({limit});
         }
         if (title.includes('交易额') || title.includes('volume')) {
-            let periodArr = ['day', 'week', 'month'];
-
-            const period = periodArr.includes(title.split(/ +/g)[1]) || 'day';
+            const period = volume.periodArr.includes(title.split(/ +/g)[1]) || 'day';
             const params = title.match(/[0-9]+/g) || [];
             const limit = params[0] || 10;
             const density = params[1] || 1;
