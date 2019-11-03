@@ -8,13 +8,19 @@ module.exports = fear = {
         if (total <= 15) {
             return moment(time).format('MM-DD');
         }
-        if (total < 30 && !(index % 3)) {
-            return moment(time).format('MM-DD');
+        if (total < 51) {
+            if (!(index % 2)) {
+                return moment(time).format('MM-DD');
+            }
+            return '';
         }
-        if (total < 50 && !(index % 5)) {
-            return moment(time).format('MM-DD');
+        if (total < 91) {
+            if (!(index % 3)) {
+                return moment(time).format('MM-DD');
+            }
+            return '';
         }
-        if (total < 90 && !(index % 10)) {
+        if (!(index % 5)) {
             return moment(time).format('MM-DD');
         }
         //if (total <= 15) {
@@ -46,6 +52,7 @@ module.exports = fear = {
     },
     async getFearChart({limit}) {
         const {labels, series} = await this.getFearData(limit);
+        console.info(labels, series);
         if (series && series.length) {
             if (series.length === 1) {
                 return `Crypto Fear & Greed Index: ${series[0] || 'heihei……'}`;
@@ -69,4 +76,4 @@ module.exports = fear = {
     }
 };
 
-// fear(50);
+//fear.getFearChart({limit: 120});
