@@ -5,7 +5,16 @@ const makeCharts = require('../charts/makeCharts.js');
 
 module.exports = fear = {
     handlerDateFormat(time, index, total) {
-        if (!(index % 3)) {
+        if (total <= 15) {
+            return moment(time).format('MM-DD');
+        }
+        if (total < 30 && !(index % 3)) {
+            return moment(time).format('MM-DD');
+        }
+        if (total < 50 && !(index % 5)) {
+            return moment(time).format('MM-DD');
+        }
+        if (total < 90 && !(index % 10)) {
             return moment(time).format('MM-DD');
         }
         //if (total <= 15) {
