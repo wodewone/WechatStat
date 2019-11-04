@@ -246,6 +246,9 @@ module.exports = volume = {
         let dataArr = data || fs.readdirSync(dirName) || [];
         if (dataArr.length < limit) {
             const prevDirName = path.join(dataPath, moment().month(moment().month() - index).startOf('month').format('YYYYMM'));
+            if(!fs.existsSync(prevDirName)){
+                return dataArr;
+            }
             const prevDataArr = fs.readdirSync(prevDirName) || [];
             dataArr = [...prevDataArr.slice(-(limit - dataArr.length)), ...dataArr];
             if (dataArr.length < limit) {
@@ -296,6 +299,6 @@ module.exports = volume = {
     }
 };
 
-//(async () => {
-//    console.info(111, await volume.getChart({period: 'day', limit: 20, density: 1, date: '', local: 1}));
-//})();
+(async () => {
+   console.info(111, await volume.getChart({period: 'day', limit: 20, density: 1, date: '', local: 1}));
+})();
