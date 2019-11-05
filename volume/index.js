@@ -184,10 +184,10 @@ module.exports = volume = {
             curData = curData.reverse();
         }
         return curData.reduce((so, cur, index) => {
-            const {time} = cur;
-            so.labels.push(this.handlerDateFormat({time, period, index, total: limit}));
+            const {time, data} = cur;
+            so.labels.push(time ? this.handlerDateFormat({time, period, index, total: curData.length}) : '');
             // 处理数据单位为亿
-            so.series.push((cur.data / 100000000).toFixed(4));
+            so.series.push(data ? (data / 100000000).toFixed(4) : '');
             return so;
         }, {
             labels: [],
@@ -206,7 +206,7 @@ module.exports = volume = {
                 }
             }
         }
-        return false;
+        return {};
     },
     getFileData({period, limit, date}) {
         const fileDir = getDateType('YYYYMM', date);
@@ -227,20 +227,22 @@ module.exports = volume = {
         const periodLen = limit || filePeriod[period] || 10;
         let response = [];
         if (fs.existsSync(dirName)) {
-            let dataArr = this.getMonthFile({dirName, limit});
-
-            dataArr.length && dataArr.reverse().slice(0, periodLen).map((fileName) => {
+            let dataArr = this.getMonthFile({dirName, periodLen}) || [];
+            dataArr.map((fileName) => {
                 if (fileName.includes('.json')) {
                     const dir = path.join(dataPath, fileName.substr(0, 6));
                     const file = fs.readFileSync(path.join(dir, fileName));
                     const data = this.handlerAveData(this.handlerFileData(file), fileName.split('.')[0]);
-                    if (data) {
-                        response.push(data)
-                    }
+                    response.push(data);
                 }
             });
+            if (response.length < periodLen) {
+                for (let i = 5; i > 0; i--) {
+                    response.push({});
+                }
+            }
         }
-        return response;
+        return response.reverse();
     },
     getMonthFile({dirName, limit, index = 1, data}) {
         let dataArr = data || fs.readdirSync(dirName) || [];
@@ -299,6 +301,6 @@ module.exports = volume = {
     }
 };
 
-(async () => {
-   console.info(111, await volume.getChart({period: 'day', limit: 20, density: 1, date: '', local: 1}));
-})();
+// (async () => {
+//    console.info(111, await volume.getChart({period: 'day', limit: 20, density: 1, date: '', local: 1}));
+// })();

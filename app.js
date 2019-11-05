@@ -39,11 +39,11 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
             return await fear.getFearChart({limit});
         }
         if (title.includes('交易额') || title.includes('volume')) {
-            const period = volume.periodArr.includes(title.split(/ +/g)[1]) || 'day';
+            const period = volume.periodArr.includes(title.split(/ +/g)[1]) ? title.split(/ +/g)[1] : 'day';
             const params = title.match(/[0-9]+/g) || [];
             const limit = params[0] || 10;
             const density = params[1] || 1;
-            const date = params[2] || '';
+            const date = title.match(/[0-9]{8}/g) || '';
             return await volume.getChart({period, limit, density, date});
         }
         if (title.includes('行情') || title.includes('market')) {
