@@ -248,13 +248,14 @@ module.exports = volume = {
         let dataArr = data || fs.readdirSync(dirName) || [];
         if (dataArr.length < limit) {
             const prevDirName = path.join(dataPath, moment().month(moment().month() - index).startOf('month').format('YYYYMM'));
-            if(!fs.existsSync(prevDirName)){
+            if (!fs.existsSync(prevDirName)) {
                 return dataArr;
             }
             const prevDataArr = fs.readdirSync(prevDirName) || [];
             dataArr = [...prevDataArr.slice(-(limit - dataArr.length)), ...dataArr];
             if (dataArr.length < limit) {
-                return this.getMonthFile({dirName, limit, index: index + 1, data: dataArr});
+                index++;
+                return this.getMonthFile({dirName, limit, index, data: dataArr});
             }
         }
         return dataArr;
