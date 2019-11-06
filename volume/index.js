@@ -227,22 +227,21 @@ module.exports = volume = {
         const periodLen = limit || filePeriod[period] || 10;
         let response = [];
         if (fs.existsSync(dirName)) {
-            let dataArr = this.getMonthFile({dirName, periodLen}) || [];
-            dataArr.map((fileName) => {
+            let dataArr = this.getMonthFile({dirName, limit: periodLen}) || [];
+            response = dataArr.map((fileName) => {
                 if (fileName.includes('.json')) {
                     const dir = path.join(dataPath, fileName.substr(0, 6));
                     const file = fs.readFileSync(path.join(dir, fileName));
-                    const data = this.handlerAveData(this.handlerFileData(file), fileName.split('.')[0]);
-                    response.push(data);
+                    return this.handlerAveData(this.handlerFileData(file), fileName.split('.')[0]) || {};
                 }
-            });
+            }).reverse();
             if (response.length < periodLen) {
                 for (let i = 5; i > 0; i--) {
                     response.push({});
                 }
             }
         }
-        return response.reverse();
+        return response;
     },
     getMonthFile({dirName, limit, index = 1, data}) {
         let dataArr = data || fs.readdirSync(dirName) || [];
@@ -303,5 +302,5 @@ module.exports = volume = {
 };
 
 // (async () => {
-//    console.info(111, await volume.getChart({period: 'day', limit: 20, density: 1, date: '', local: 1}));
+//    console.info(111, await volume.getChart({period: 'day', limit: 20, density: 1, date: '20191003', local: 1}));
 // })();
