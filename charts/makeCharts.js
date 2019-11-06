@@ -40,6 +40,8 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
 
     const opts = {
         options: {
+            // width: '3000px',
+            // height: '700px',
             fullWidth: true,
             chartPadding: {
                 top: 20,
@@ -50,12 +52,27 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
         },
         title: {
             height: 50,
-            fill: "#4A5572"
+            fill: "#4A5572",
         },
         subtitle: {
             fill: "#999"
         },
     };
+
+    // 如果数据列超过100则改变图片宽度
+    if (series) {
+        let maxLength = series[0].length;
+        if (series.length > 1) {
+            series.reduce((so, cur) => {
+                return cur.length > so ? cur.length : so;
+            }, 0);
+        }
+        if (maxLength > 100) {
+            opts.options.width = maxLength * 12;
+        }
+    }else{
+        return 'Error: 缺少数据~';
+    }
 
     filePath = path.join(filePath, 'chartsImg/');
     const svgPathName = filePath + fileName + '.svg';
@@ -103,7 +120,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
         let {media_id, created_at} = await rp(opt);
         return media_id;
     } catch (e) {
-        console.warn('Marke image faild: ', e);
-        return false;
+        console.warn('Warn: Marke image faild: ', e);
+        return 'Warn: Marke image faild!';
     }
 };

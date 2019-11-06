@@ -139,11 +139,15 @@ module.exports = volume = {
             return moment(time).format(period === 'min' ? 'hh:mm' : 'MM-DD');
         }
         if (total <= 100) {
-            if (!(index % 5)) {
+            if (!(index % 3)) {
                 return moment(time).format(period === 'min' ? 'hh:mm' : 'MM-DD');
             }
             return '';
         }
+        if (!(index % 5)) {
+            return moment(time).format(period === 'min' ? 'hh:mm' : 'MM-DD');
+        }
+        return '';
     },
     /**
      * 处理数据源
@@ -170,6 +174,7 @@ module.exports = volume = {
             return {};
         }
         const dataLen = fileData.length;
+        console.info(811, limit, dataLen);
         let curData = [];
         for (let i = 0; i < dataLen; i++) {
             // 如果找不到文件则中断
@@ -215,9 +220,9 @@ module.exports = volume = {
         if (period === 'min') {
             const fileName = path.join(dirName, `${getDateType('YYYYMMDD', date)}.json`);
             if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
-                return this.handlerFileData(fs.readFileSync(fileName));
+                return (this.handlerFileData(fs.readFileSync(fileName)) || []).slice(-limit);
             }
-            return false;
+            return [];
         }
 
         const filePeriod = {
@@ -302,5 +307,5 @@ module.exports = volume = {
 };
 
 // (async () => {
-//    console.info(111, await volume.getChart({period: 'day', limit: 20, density: 1, date: '20191003', local: 1}));
+//    console.info(111, await volume.getChart({period: 'min', limit: 200, density: 1, date: '20191102', local: 1}));
 // })();
