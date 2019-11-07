@@ -69,7 +69,7 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
 //         let labels = [];
 //         let series = [];
 //         data.data.forEach(item => {
-//             item.time = moment(item.timestamp * 1000).format('YYYY-MM-DD hh:mm:ss');
+//             item.time = moment(item.timestamp * 1000).format('YYYY-MM-DD HH:mm:ss');
 //             labels.push(moment(item.timestamp * 1000).format('MM-DD'));
 //             series.push(item.value);
 //         });

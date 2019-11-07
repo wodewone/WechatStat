@@ -129,23 +129,24 @@ module.exports = volume = {
         return JSON.parse('[' + data + ']');
     },
     handlerDateFormat({time, period, index, total}) {
-        if (['day', 'week', 'month'].includes(period)) {
-            return moment(time).format('MM-DD');
-        }
+        // if (['day', 'week', 'month'].includes(period)) {
+        //     return moment(time).format('MM-DD');
+        // }
+        total = total - 1;
         if (total <= 15) {
-            return moment(time).format(period === 'min' ? 'MM-DD hh:mm' : 'MM-DD');
+            return moment(time).format(period === 'min' ? 'MM-DD HH:mm' : 'MM-DD');
         }
         if (total <= 30) {
-            return moment(time).format(period === 'min' ? 'hh:mm' : 'MM-DD');
+            return moment(time).format(period === 'min' ? 'HH:mm' : 'MM-DD');
         }
         if (total <= 100) {
-            if (!(index % 3)) {
-                return moment(time).format(period === 'min' ? 'hh:mm' : 'MM-DD');
+            if ((!(index % 3) && (total - index) > 2) || total === index) {
+                return moment(time).format(period === 'min' ? 'HH:mm' : 'MM-DD');
             }
             return '';
         }
-        if (!(index % 5)) {
-            return moment(time).format(period === 'min' ? 'hh:mm' : 'MM-DD');
+        if ((!(index % 5) && (total - index) > 2) || total === index) {
+            return moment(time).format(period === 'min' ? 'HH:mm' : 'MM-DD');
         }
         return '';
     },
@@ -156,9 +157,10 @@ module.exports = volume = {
      * @param limit         数据量，条数
      * @param density        数据频次，单位：min
      * @param date          数据日期    period = min时传入date有效
+     * @param full          是否全量输出（例 需要200条数据，但是只找到100条，以空补白）
      * @returns {*}
      */
-        getChartData({period = 'day', limit = 10, density = 1, date = ''}) {
+    getChartData: function ({period = 'day', limit, density = 1, date = '', full = true}) {
         //period = period || 'day';
         //limit = limit || 10;
         //density = density || 1;
@@ -167,27 +169,29 @@ module.exports = volume = {
             return {};
         }
         if (period !== 'min') {
+            limit = limit || 10;
             date = '';
         }
-        const fileData = this.getFileData({period, limit, date});
+        const fileData = this.getFileData({period, limit, date, full});
         if (!fileData || !fileData.length) {
             return {};
         }
-        const dataLen = fileData.length;
-        console.info(811, limit, dataLen);
-        let curData = [];
-        for (let i = 0; i < dataLen; i++) {
-            // 如果找不到文件则中断
-            let item = fileData[dataLen - 1 - density * i];
-            if (item) {
-                curData.push(item);
-            } else {
-                break;
-            }
-        }
-        if (period === 'min') {
-            curData = curData.reverse();
-        }
+        let curData = fileData.filter((item, index) => {
+            return !(index % density)
+        });
+        // let curData = [];
+        // for (let i = 0; i < dataLen; i++) {
+        //     // 如果找不到文件则中断
+        //     let item = fileData[dataLen - 1 - density * i];
+        //     if (item) {
+        //         curData.push(item);
+        //     } else {
+        //         break;
+        //     }
+        // }
+        // if (period === 'min') {
+        //     curData = curData.reverse();
+        // }
         return curData.reduce((so, cur, index) => {
             const {time, data} = cur;
             so.labels.push(time ? this.handlerDateFormat({time, period, index, total: curData.length}) : '');
@@ -213,14 +217,18 @@ module.exports = volume = {
         }
         return {};
     },
-    getFileData({period, limit, date}) {
+    getFileData({period, limit, date, full}) {
         const fileDir = getDateType('YYYYMM', date);
         const dirName = path.join(dataPath, fileDir);
 
         if (period === 'min') {
             const fileName = path.join(dirName, `${getDateType('YYYYMMDD', date)}.json`);
             if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
-                return (this.handlerFileData(fs.readFileSync(fileName)) || []).slice(-limit);
+                const _data = (this.handlerFileData(fs.readFileSync(fileName)) || []);
+                if (limit && limit > 1) {
+                    return _data.slice(-limit)
+                }
+                return _data;
             }
             return [];
         }
@@ -240,7 +248,7 @@ module.exports = volume = {
                     return this.handlerAveData(this.handlerFileData(file), fileName.split('.')[0]) || {};
                 }
             }).reverse();
-            if (response.length < periodLen) {
+            if (full && response.length < periodLen) {
                 for (let i = 5; i > 0; i--) {
                     response.push({});
                 }
@@ -267,7 +275,7 @@ module.exports = volume = {
     getChartSubTitle(period, labels, date) {
         switch (period) {
             case 'min':
-                return `By Huobi: ${moment(date || new Date()).format('YYYY-MM-DD')}`;
+                return `By Huobi: ${moment(labels[0] || new Date()).format('YYYY-MM-DD HH:mm')}`;
             case 'day':
                 const range = `${labels[0]} to ${labels[labels.length - 1]}`;
                 return `By Huobi: ${range}`;
@@ -280,7 +288,7 @@ module.exports = volume = {
         }
     },
     async getChart({period, limit, density, date, local}) {
-        let {labels, series} = this.getChartData({period, limit, density, date});
+        let {labels, series} = this.getChartData({period, limit, density, date, full: false});
         if (!series) {
             return '没有找到相关数据，请检查数据正确性……';
         }
@@ -307,5 +315,5 @@ module.exports = volume = {
 };
 
 // (async () => {
-//    console.info(111, await volume.getChart({period: 'min', limit: 200, density: 1, date: '20191102', local: 1}));
+//    console.info(111, await volume.getChart({period: 'min', limit: '', density: 1, date: '', local: 1}));
 // })();

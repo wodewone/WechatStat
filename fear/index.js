@@ -52,7 +52,6 @@ module.exports = fear = {
     },
     async getFearChart({limit}) {
         const {labels, series} = await this.getFearData(limit);
-        console.info(labels, series);
         if (series && series.length) {
             if (series.length === 1) {
                 return `Crypto Fear & Greed Index: ${series[0] || 'heihei……'}`;

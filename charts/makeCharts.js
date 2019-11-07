@@ -4,8 +4,6 @@ const svg2png = require('svg2png');
 const chartistSvg = require('svg-chartist');
 const rp = require('request-promise');
 
-const accessToken = require('./accessToken.js');
-
 const nginxPath = '/home/www/wechat/';
 
 // function makeImage(svgString){
@@ -40,8 +38,6 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
 
     const opts = {
         options: {
-            // width: '3000px',
-            // height: '700px',
             fullWidth: true,
             chartPadding: {
                 top: 20,
@@ -60,7 +56,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
     };
 
     // 如果数据列超过100则改变图片宽度
-    if (series) {
+    if (series && series.length) {
         let maxLength = series[0].length;
         if (series.length > 1) {
             series.reduce((so, cur) => {
@@ -106,7 +102,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
         const form = {
             smfile: fs.createReadStream(pngPathName),
         };
-        let token = await accessToken();
+        let token = await require('./accessToken.js')();
         let opt = {
             // uri: `https://sm.ms/api/upload`,   // 上传到图床
             uri: `https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=image`,   // 上传到微信临时素材
