@@ -189,9 +189,9 @@ module.exports = volume = {
         //         break;
         //     }
         // }
-        // if (period === 'min') {
-        //     curData = curData.reverse();
-        // }
+        if (period !== 'min') {
+            curData = curData.reverse();
+        }
         return curData.reduce((so, cur, index) => {
             const {time, data} = cur;
             so.labels.push(time ? this.handlerDateFormat({time, period, index, total: curData.length}) : '');
@@ -275,7 +275,7 @@ module.exports = volume = {
     getChartSubTitle(period, labels, date) {
         switch (period) {
             case 'min':
-                return `By Huobi: ${moment(labels[0] || new Date()).format('YYYY-MM-DD HH:mm')}`;
+                return `By Huobi: ${date ? date + labels[0] : moment(new Date()).format('YYYY-MM-DD HH:mm')}`;
             case 'day':
                 const range = `${labels[0]} to ${labels[labels.length - 1]}`;
                 return `By Huobi: ${range}`;
@@ -315,5 +315,5 @@ module.exports = volume = {
 };
 
 // (async () => {
-//    console.info(111, await volume.getChart({period: 'min', limit: '', density: 1, date: '', local: 1}));
+//    console.info(111, await volume.getChart({period: 'min', limit: '100', density: 1, date: '', local: 1}));
 // })();
