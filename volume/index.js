@@ -237,7 +237,7 @@ module.exports = volume = {
             week: 7,
             month: 30
         };
-        const periodLen = limit || filePeriod[period] || 10;
+        const periodLen = +limit || filePeriod[period] || 10;
         let response = [];
         if (fs.existsSync(dirName)) {
             let dataArr = this.getMonthFile({dirName, limit: periodLen}) || [];
@@ -249,7 +249,7 @@ module.exports = volume = {
                 }
             }).reverse();
             if (full && response.length < periodLen) {
-                for (let i = 5; i > 0; i--) {
+                for (let i = periodLen - response.length; i > 0; i--) {
                     response.push({});
                 }
             }
@@ -316,4 +316,5 @@ module.exports = volume = {
 
 // (async () => {
 //    console.info(111, await volume.getChart({period: 'min', limit: '100', density: 1, date: '', local: 1}));
+//    console.info(111, await volume.getChart({limit: '120', local: 1}));
 // })();
