@@ -27,6 +27,6 @@ module.exports = market = {
     }
 };
 
-// (async () => {
-//     console.info(222, await market.getChart({limit: 120, local: 1}));
-// })();
+(async () => {
+    console.info(222, await market.getChart({limit: 30, local: 1}));
+})();

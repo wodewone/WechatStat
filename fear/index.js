@@ -5,33 +5,22 @@ const makeCharts = require('../charts/makeCharts.js');
 
 module.exports = fear = {
     handlerDateFormat(time, index, total) {
+        total = total - 1;
         if (total <= 15) {
             return moment(time).format('MM-DD');
         }
-        if (total < 51) {
-            if (!(index % 2)) {
-                return moment(time).format('MM-DD');
-            }
-            return '';
-        }
-        if (total < 91) {
-            if (!(index % 3)) {
-                return moment(time).format('MM-DD');
-            }
-            return '';
-        }
-        if (!(index % 5)) {
+        if (total <= 20) {
             return moment(time).format('MM-DD');
         }
-        //if (total <= 15) {
-        //    return moment(time).format('YYYY-MM-DD');
-        //}
-        //if (total <= 30) {
-        //    return moment(time).format('MM-DD');
-        //}
-        //if (!(index % 3)) {
-        //    return moment(time).format('YY-MM-DD');
-        //}
+        if (total <= 60) {
+            if ((!(index % 3) && (total - index) > 2) || total === index) {
+                return moment(time).format('MM-DD');
+            }
+            return '';
+        }
+        if ((!(index % 5) && (total - index) > 2) || total === index) {
+            return moment(time).format('MM-DD');
+        }
         return '';
     },
     /**
