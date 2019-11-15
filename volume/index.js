@@ -253,18 +253,20 @@ module.exports = volume = {
                 }
             }
         }
+        console.info(982, response);
         return response;
     },
     getMonthFile({dirName, limit, index = 1, data, offset}) {
-        let dataArr = data || fs.readdirSync(dirName) || [];
+        let firstData = fs.readdirSync(dirName);
+        firstData = (offset && firstData) ? firstData.slice(0, -offset) : firstData;
+        let dataArr = data || firstData || [];
         if (dataArr.length < limit) {
             const curDirName = path.join(dataPath, moment().month(moment().month() - index).startOf('month').format('YYYYMM'));
             if (!fs.existsSync(curDirName)) {
                 return dataArr;
             }
             const curDataArr = fs.readdirSync(curDirName) || [];
-            const curData = (offset && !dataArr.length) ? curDataArr.slice(-(limit - dataArr.length), -offset) : curDataArr.slice(-(limit - dataArr.length));
-            dataArr = [...curData, ...dataArr];
+            dataArr = [...curDataArr.slice(-(limit - dataArr.length)), ...dataArr];
             if (dataArr.length < limit) {
                 index++;
                 return this.getMonthFile({dirName, limit, index, data: dataArr});
@@ -314,7 +316,5 @@ module.exports = volume = {
     }
 };
 
-// (async () => {
-//    console.info(111, await volume.getChart({period: 'min', limit: '100', density: 1, date: '', local: 1}));
-//    console.info(111, await volume.getChart({limit: '120', local: 1}));
-// })();
+// volume.getChart({period: 'min', limit: '100', density: 1, date: '', local: 1});
+// volume.getChartData({limit: '120', offset: 1, local: 1});

@@ -9,13 +9,19 @@ module.exports = fear = {
         if (total < 15) {
             return moment(time).format('MM-DD HH:mm');
         } else {
-            if (total < 60) {
-                if ((index % 3 || (total - index) <= 2) && total !== index) {
+            if (total < 30) {
+                if ((index % 2 || (total - index) < 2) && total !== index) {
                     return '';
                 }
             } else {
-                if ((index % 5 || (total - index) <= 2) && total !== index) {
-                    return '';
+                if (total < 30) {
+                    if ((index % 3 || (total - index) <= 2) && total !== index) {
+                        return '';
+                    }
+                } else {
+                    if ((index % 5 || (total - index) <= 2) && total !== index) {
+                        return '';
+                    }
                 }
             }
         }
