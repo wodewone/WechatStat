@@ -133,22 +133,20 @@ module.exports = volume = {
         //     return moment(time).format('MM-DD');
         // }
         total = total - 1;
-        if (total <= 15) {
+        if (total < 15) {
             return moment(time).format(period === 'min' ? 'MM-DD HH:mm' : 'MM-DD');
-        }
-        if (total <= 20) {
-            return moment(time).format(period === 'min' ? 'HH:mm' : 'MM-DD');
-        }
-        if (total <= 60) {
-            if ((!(index % 3) && (total - index) > 2) || total === index) {
-                return moment(time).format(period === 'min' ? 'HH:mm' : 'MM-DD');
+        } else {
+            if (total < 60) {
+                if ((index % 3 || (total - index) <= 2) && total !== index) {
+                    return '';
+                }
+            } else {
+                if ((index % 5 || (total - index) <= 2) && total !== index) {
+                    return '';
+                }
             }
-            return '';
         }
-        if ((!(index % 5) && (total - index) > 2) || total === index) {
-            return moment(time).format(period === 'min' ? 'HH:mm' : 'MM-DD');
-        }
-        return '';
+        return moment(time).format(period === 'min' ? 'HH:mm' : 'MM-DD');
     },
     /**
      * 处理数据源

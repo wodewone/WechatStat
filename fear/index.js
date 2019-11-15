@@ -6,22 +6,20 @@ const makeCharts = require('../charts/makeCharts.js');
 module.exports = fear = {
     handlerDateFormat(time, index, total) {
         total = total - 1;
-        if (total <= 15) {
-            return moment(time).format('MM-DD');
-        }
-        if (total <= 20) {
-            return moment(time).format('MM-DD');
-        }
-        if (total <= 60) {
-            if ((!(index % 3) && (total - index) > 2) || total === index) {
-                return moment(time).format('MM-DD');
+        if (total < 15) {
+            return moment(time).format('MM-DD HH:mm');
+        } else {
+            if (total < 60) {
+                if ((index % 3 || (total - index) <= 2) && total !== index) {
+                    return '';
+                }
+            } else {
+                if ((index % 5 || (total - index) <= 2) && total !== index) {
+                    return '';
+                }
             }
-            return '';
         }
-        if ((!(index % 5) && (total - index) > 2) || total === index) {
-            return moment(time).format('MM-DD');
-        }
-        return '';
+        return moment(time).format('MM-DD');
     },
     /**
      * @param limit 数据量；0 = 全部
@@ -37,6 +35,7 @@ module.exports = fear = {
                 series.push(item.value);
             });
         }
+        console.info(871, labels);
         return {labels, series};
     },
     async getFearChart({limit}) {
@@ -64,4 +63,5 @@ module.exports = fear = {
     }
 };
 
-//fear.getFearChart({limit: 120});
+//     fear.getFearChart({limit: 120});
+//     await fear.getFearData(32);
