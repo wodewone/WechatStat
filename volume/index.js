@@ -136,10 +136,10 @@ module.exports = volume = {
         if (total <= 15) {
             return moment(time).format(period === 'min' ? 'MM-DD HH:mm' : 'MM-DD');
         }
-        if (total <= 30) {
+        if (total <= 20) {
             return moment(time).format(period === 'min' ? 'HH:mm' : 'MM-DD');
         }
-        if (total <= 100) {
+        if (total <= 60) {
             if ((!(index % 3) && (total - index) > 2) || total === index) {
                 return moment(time).format(period === 'min' ? 'HH:mm' : 'MM-DD');
             }
@@ -156,11 +156,12 @@ module.exports = volume = {
      *        min
      * @param limit         数据量，条数
      * @param density        数据频次，单位：min
-     * @param date          数据日期    period = min时传入date有效
+     * @param date          起始数据日期    period = min时传入date有效
+     * @param offset        数据偏移值
      * @param full          是否全量输出（例 需要200条数据，但是只找到100条，以空补白）
      * @returns {*}
      */
-    getChartData: function ({period = 'day', limit, density = 1, date = '', full = true}) {
+    getChartData: function ({period = 'day', limit, density = 1, date = '', offset = 0, full = true}) {
         //period = period || 'day';
         //limit = limit || 10;
         //density = density || 1;
@@ -172,7 +173,7 @@ module.exports = volume = {
             limit = limit || 10;
             date = '';
         }
-        const fileData = this.getFileData({period, limit, date, full});
+        const fileData = this.getFileData({period, limit, date, full, offset});
         if (!fileData || !fileData.length) {
             return {};
         }
@@ -217,7 +218,7 @@ module.exports = volume = {
         }
         return {};
     },
-    getFileData({period, limit, date, full}) {
+    getFileData({period, limit, date, full, offset}) {
         const fileDir = getDateType('YYYYMM', date);
         const dirName = path.join(dataPath, fileDir);
 
@@ -240,7 +241,7 @@ module.exports = volume = {
         const periodLen = +limit || filePeriod[period] || 10;
         let response = [];
         if (fs.existsSync(dirName)) {
-            let dataArr = this.getMonthFile({dirName, limit: periodLen}) || [];
+            let dataArr = this.getMonthFile({dirName, limit: periodLen, offset}) || [];
             response = dataArr.map((fileName) => {
                 if (fileName.includes('.json')) {
                     const dir = path.join(dataPath, fileName.substr(0, 6));
@@ -256,15 +257,16 @@ module.exports = volume = {
         }
         return response;
     },
-    getMonthFile({dirName, limit, index = 1, data}) {
+    getMonthFile({dirName, limit, index = 1, data, offset}) {
         let dataArr = data || fs.readdirSync(dirName) || [];
         if (dataArr.length < limit) {
-            const prevDirName = path.join(dataPath, moment().month(moment().month() - index).startOf('month').format('YYYYMM'));
-            if (!fs.existsSync(prevDirName)) {
+            const curDirName = path.join(dataPath, moment().month(moment().month() - index).startOf('month').format('YYYYMM'));
+            if (!fs.existsSync(curDirName)) {
                 return dataArr;
             }
-            const prevDataArr = fs.readdirSync(prevDirName) || [];
-            dataArr = [...prevDataArr.slice(-(limit - dataArr.length)), ...dataArr];
+            const curDataArr = fs.readdirSync(curDirName) || [];
+            const curData = (offset && !dataArr.length) ? curDataArr.slice(-(limit - dataArr.length), -offset) : curDataArr.slice(-(limit - dataArr.length));
+            dataArr = [...curData, ...dataArr];
             if (dataArr.length < limit) {
                 index++;
                 return this.getMonthFile({dirName, limit, index, data: dataArr});

@@ -1,11 +1,16 @@
+import moment from "moment";
+
 const volume = require("../volume");
 const fear = require("../fear");
 const makeCharts = require('../charts/makeCharts.js');
 
 module.exports = market = {
     async getChart({limit = 7, local}) {
-        const {series: _vol} = await volume.getChartData({limit});
         const {labels, series: _fear} = await fear.getFearData(limit);
+        const {series: _vol} = await volume.getChartData({
+            limit,
+            offset: moment().format('MMDD') - moment(labels[labels.length - 1]).format('MMDD')
+        });
         let mediaId = await makeCharts({
             local,
             labels,
