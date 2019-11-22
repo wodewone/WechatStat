@@ -89,7 +89,7 @@ let checkData = {
     },
     async getApiData() {
         try {
-            const {data: {data}} = await axios.get(`https://www.huobi.vn/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
+            const {data: {data}} = await axios.get(`https://www.huobi.io/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
             if (data) {
                 return data;
             }
