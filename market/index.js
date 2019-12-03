@@ -8,7 +8,7 @@ module.exports = market = {
         const {labels, series: _fear} = await fear.getFearData(limit);
         const {series: _vol} = await volume.getChartData({
             limit,
-            offset: moment().format('MMDD') - moment(labels[labels.length - 1]).format('MMDD')
+            offset: moment().format('MMDD') - moment('2000-'+labels[labels.length - 1]).format('MMDD')
         });
         let mediaId = await makeCharts({
             local,
@@ -27,6 +27,4 @@ module.exports = market = {
     }
 };
 
-// (async () => {
-//     console.info(222, await market.getChart({limit: 30, local: 1}));
-// })();
+market.getChart({limit: 30, local: 1});

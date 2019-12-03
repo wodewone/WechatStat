@@ -87,7 +87,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
     // 可以通过域名访问
     if (fs.existsSync(nginxPath)) {
         fs.writeFile(nginxPath + fileName + '.svg', svgString, (err) => {
-            console.warn('file write error: ', err);
+            err && console.warn('file write error: ', err);
         });
     }
     
