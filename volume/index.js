@@ -301,7 +301,7 @@ module.exports = volume = {
             series: [series],
             title: 'Huobi Volume(U. 100m/USDT)',
             subtitle
-        }, {filePath: __dirname, fileName: 'volume'});
+        }, {fileName: 'volume'});
         // console.info('Make volume media ID:', mediaId);
         if (mediaId) {
             return {

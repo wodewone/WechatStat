@@ -86,7 +86,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
     // 备份到 Nginx 路径下
     // 可以通过域名访问
     if (fs.existsSync(nginxPath)) {
-        fs.writeFileSync(nginxPath + fileName + '.svg', svgString);
+        fs.writeFile(nginxPath + fileName + '.svg', svgString);
     }
     
     // svg 转 png

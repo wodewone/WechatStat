@@ -1,20 +1,14 @@
 const Koa = require('koa');
 const wechat = require('co-wechat');
-const router = require('koa-router')();
 
 const volume = require('./volume');
 const fear = require('./fear');
 const market = require('./market');
 
-const port = 8088;
-const app = new Koa();
+const {SERVER_URL, PRO_PORT, WECHAT_CONFIG} = require('./config/config');
+const {responseTimeOut} = require('./plugin/utils');
 
-const config = {
-    token: 'wodewone',
-    appid: 'wx4c2452c3b5b8f406',
-    encodingAESKey: 'LLETB4SMUikbSU25uGsVwizb6AGmio4tCVS1BsgUM7D',
-    checkSignature: true, // 可选，默认为true。由于微信公众平台接口调试工具在明>文模式下不发送签名，所以如要使用该测试工具，请将其设置为false
-};
+const app = new Koa();
 
 /**
  *
@@ -30,13 +24,13 @@ const config = {
         MsgId: '22267881023320195'
     }
  */
-app.use(wechat(config).middleware(async (msg, ctx, next) => {
+app.use(wechat(WECHAT_CONFIG).middleware(async (msg, ctx, next) => {
     console.info('=================================');
     if (msg.MsgType === 'text') {
         const title = msg.Content || '';
         if (title.includes('fear')) {
             let limit = title.match(/[0-9]+/g) || 1;
-            return await fear.getFearChart({limit});
+            return await responseTimeOut({resp: `${SERVER_URL}/wechat/fear`}, fear.getFearChart({limit}));
         }
         if (title.includes('交易额') || title.includes('volume')) {
             const period = volume.periodArr.includes(title.split(/ +/g)[1]) ? title.split(/ +/g)[1] : 'day';
@@ -44,16 +38,16 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
             const limit = params[0] || 10;
             const density = params[1] || 1;
             const date = title.match(/[0-9]{8}/g) || '';
-            return await volume.getChart({period, limit, density, date});
+            return await responseTimeOut({resp: `${SERVER_URL}/wechat/volume`}, volume.getChart({period, limit, density, date}));
         }
         if (title.includes('行情') || title.includes('market')) {
-            return await market.getChart({limit: title.match(/[0-9]+/g) || 7});
+            return await responseTimeOut({resp: `${SERVER_URL}/wechat/market`}, market.getChart({limit: title.match(/[0-9]+/g) || 7}));
         }
         if (title === '历史记录') {
             return '还没有消息';
         }
         if (title === '域名') {
-            return 'http://118.24.53.67:8090/'
+            return SERVER_URL;
         }
     }
     if (msg.MsgType === 'image') {
@@ -62,26 +56,7 @@ app.use(wechat(config).middleware(async (msg, ctx, next) => {
     return '';
 }));
 
-// router.get('/', async (ctx, next) => {
-//     // console.info(ctx);
-//     let {data} = await axios.get('https://api.alternative.me/fng/?limit=10');
-//     if(data && data.data){
-//         let labels = [];
-//         let series = [];
-//         data.data.forEach(item => {
-//             item.time = moment(item.timestamp * 1000).format('YYYY-MM-DD HH:mm:ss');
-//             labels.push(moment(item.timestamp * 1000).format('MM-DD'));
-//             series.push(item.value);
-//         });
-//         const svgPath = await makeCharts(labels, [series]);
 
-//         ctx.response.body = '<h1>Index</h1><br /><input id="file" type="file" />';
-//         return true;
-//     }
-//     ctx.response.body = 'index';
-// });
-// app.use(router.routes());
+app.listen(PRO_PORT);
 
-app.listen(port);
-
-console.log(`Server listening at http://127.0.0.1:${port}`);
+console.log(`Server listening at http://127.0.0.1:${PRO_PORT}`);

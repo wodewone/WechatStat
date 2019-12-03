@@ -16,7 +16,7 @@ module.exports = market = {
             series: [[], _vol, _fear],
             title: 'Fear.Greed & Exchange volume',
             subtitle: 'orange = fear.greed. red = volume.',
-        }, {filePath: __dirname, fileName: 'fear'});
+        }, {fileName: 'market'});
         if (mediaId) {
             return {
                 type: "image",
