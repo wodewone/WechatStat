@@ -253,7 +253,6 @@ module.exports = volume = {
                 }
             }
         }
-        console.info(982, response);
         return response;
     },
     getMonthFile({dirName, limit, index = 1, data, offset}) {

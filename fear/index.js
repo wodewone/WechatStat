@@ -41,7 +41,6 @@ module.exports = fear = {
                 series.push(item.value);
             });
         }
-        console.info(871, labels);
         return {labels, series};
     },
     async getFearChart({limit}) {
