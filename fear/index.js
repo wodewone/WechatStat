@@ -33,15 +33,17 @@ module.exports = fear = {
      */
     async getFearData(limit = 1) {
         let {data: {data}} = await axios.get(`https://api.alternative.me/fng/?limit=${limit}`);
+        let labelDate = [];
         let labels = [];
         let series = [];
         if (data.length) {
             data.reverse().forEach((item, index) => {
+                labelDate.push(item.timestamp * 1000);
                 labels.push(this.handlerDateFormat(item.timestamp * 1000, index, data.length));
                 series.push(item.value);
             });
         }
-        return {labels, series};
+        return {labels, series, labelDate};
     },
     async getFearChart({limit}) {
         const {labels, series} = await this.getFearData(limit);

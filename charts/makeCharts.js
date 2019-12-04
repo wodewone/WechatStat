@@ -57,7 +57,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
 
     // 如果数据列超过100则改变图片宽度
     if (series && series.length) {
-        let maxLength = series[0].length;
+        let maxLength = Math.max(...series.map(i => i.length));
         if (series.length > 1) {
             series.reduce((so, cur) => {
                 return cur.length > so ? cur.length : so;

@@ -5,10 +5,10 @@ const makeCharts = require('../charts/makeCharts.js');
 
 module.exports = market = {
     async getChart({limit = 7, local}) {
-        const {labels, series: _fear} = await fear.getFearData(limit);
+        const {labelDate, labels, series: _fear} = await fear.getFearData(limit);
         const {series: _vol} = await volume.getChartData({
             limit,
-            offset: moment().format('MMDD') - moment('2000-'+labels[labels.length - 1]).format('MMDD')
+            offset: moment().diff(moment(labelDate[labelDate.length - 1]), 'd')
         });
         let mediaId = await makeCharts({
             local,
