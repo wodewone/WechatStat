@@ -1,5 +1,6 @@
 const Koa = require('koa');
 const wechat = require('co-wechat');
+const moment = require('moment');
 
 const volume = require('./volume');
 const fear = require('./fear');
@@ -28,15 +29,19 @@ const app = new Koa();
         MsgId: '22267881023320195'
     }
  */
+const getLog = (type) => {
+    console.info(`=[${type}]================================[${moment().format('YYYY/MM/DD/ hh:mm')}]`);
+};
 app.use(wechat(WECHAT_CONFIG).middleware(async (msg, ctx, next) => {
-    console.info('=================================');
     if (msg.MsgType === 'text') {
         const title = msg.Content || '';
         if (title.includes('fear')) {
+            getLog('fear');
             let limit = title.match(/[0-9]+/g) || 1;
             return await responseTimeOut({resp: `${SERVER_URL}/wechat/fear.svg`}, fear.getFearChart({limit}));
         }
         if (title.includes('交易额') || title.includes('volume')) {
+            getLog('volume');
             const period = volume.periodArr.includes(title.split(/ +/g)[1]) ? title.split(/ +/g)[1] : 'day';
             const params = title.match(/[0-9]+/g) || [];
             const limit = params[0] || 10;
@@ -45,16 +50,20 @@ app.use(wechat(WECHAT_CONFIG).middleware(async (msg, ctx, next) => {
             return await responseTimeOut({resp: `${SERVER_URL}/wechat/volume.svg`}, volume.getChart({period, limit, density, date}));
         }
         if (title.includes('行情') || title.includes('market')) {
+            getLog('market');
             return await responseTimeOut({resp: `${SERVER_URL}/wechat/market.svg`}, market.getChart({limit: title.match(/[0-9]+/g) || 7}));
         }
         if (title === '历史记录') {
+            getLog('历史记录');
             return '还没有消息';
         }
         if (title === '域名') {
+            getLog('域名');
             return SERVER_URL;
         }
     }
     if (msg.MsgType === 'image') {
+        getLog('image');
         return msg.PicUrl;
     }
     return '';

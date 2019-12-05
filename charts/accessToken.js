@@ -11,7 +11,6 @@ if(fs.existsSync('./ACCESS_TOKEN.dog')){
 // 初始化字段值
 guard_dog.init('ACCESS_TOKEN', async (handler) => {
     let {data: {access_token, expires_in}} = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appid}&secret=${secret}`);
-    console.info('=======> ACCESS_TOKEN <=======', access_token);
     handler(access_token, expires_in);
 });
 
