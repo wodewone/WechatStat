@@ -69,7 +69,6 @@ app.use(wechat(WECHAT_CONFIG).middleware(async (msg, ctx, next) => {
     return '';
 }));
 
-
 app.listen(PRO_PORT);
 
-console.log(`Server listening at http://127.0.0.1:${PRO_PORT}`);
+console.log(`Server listening at http://127.0.0.1:${PRO_PORT}>>>>>>>>>>${moment().format('YYYY/MM/DD/ hh:mm:ss')}`);
