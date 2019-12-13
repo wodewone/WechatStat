@@ -30,7 +30,7 @@ const app = new Koa();
     }
  */
 const getLog = (type) => {
-    console.info(`[${type}]================================[${moment().format('YYYY/MM/DD/ hh:mm:ss')}]`);
+    console.info(`[${type}]================================[${moment().format('YYYY/MM/DD/ HH:mm:ss')}]`);
 };
 app.use(wechat(WECHAT_CONFIG).middleware(async (msg, ctx, next) => {
     if (msg.MsgType === 'text') {
