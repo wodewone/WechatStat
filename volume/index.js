@@ -89,7 +89,7 @@ let checkData = {
     },
     async getApiData() {
         try {
-            const {data: {data}} = await axios.get(`https://www.huobi.io/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
+            const {data: {data}} = await axios.get(`https://www.huobi.vc/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
             if (data) {
                 return data;
             }
@@ -112,7 +112,7 @@ let checkData = {
 checkData.init();
 
 module.exports = volume = {
-    periodArr: ['min', 'day', 'week', 'month'],
+    periodArr: ['min', 'hour', 'day', 'week', 'month'],
     number2count(num) {
         if (num < 1000) {
             return num;
@@ -216,22 +216,29 @@ module.exports = volume = {
         }
         return {};
     },
-    getFileData({period, limit, date, full, offset}) {
-        const fileDir = getDateType('YYYYMM', date);
-        const dirName = path.join(dataPath, fileDir);
-
-        if (period === 'min') {
-            const fileName = path.join(dirName, `${getDateType('YYYYMMDD', date)}.json`);
-            if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
-                const _data = (this.handlerFileData(fs.readFileSync(fileName)) || []);
-                if (limit && limit > 1) {
-                    return _data.slice(-limit)
-                }
-                return _data;
+    getDataMin({dirName, limit, date}) {
+        const fileName = path.join(dirName, `${getDateType('YYYYMMDD', date)}.json`);
+        if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
+            const _data = (this.handlerFileData(fs.readFileSync(fileName)) || []);
+            if (limit && limit > 1) {
+                return _data.slice(-limit)
             }
-            return [];
+            return _data;
         }
-
+        return [];
+    },
+    getDataHours({dirName, limit, date}) {
+        const fileName = path.join(dirName, `${getDateType('YYYYMMDD', date)}.json`);
+        if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
+            const _data = (this.handlerFileData(fs.readFileSync(fileName)) || []);
+            if (limit && limit > 1) {
+                return _data.slice(-limit)
+            }
+            return _data;
+        }
+        return [];
+    },
+    getDataDays({dirName, limit, offset, full, period}) {
         const filePeriod = {
             week: 7,
             month: 30
@@ -254,6 +261,18 @@ module.exports = volume = {
             }
         }
         return response;
+    },
+    getFileData({period, limit, date, full, offset}) {
+        const fileDir = getDateType('YYYYMM', date);
+        const dirName = path.join(dataPath, fileDir);
+
+        if (period === 'min') {
+            return this.getDataMin({dirName, limit, date});
+        }
+        if (period === 'hours') {
+
+        }
+        return this.getDataDays({dirName, limit, offset, full, period});
     },
     getMonthFile({dirName, limit, index = 1, data, offset}) {
         let firstData = fs.readdirSync(dirName);
