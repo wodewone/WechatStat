@@ -6,9 +6,13 @@ const moment = require('moment');
 const makeCharts = require('../charts/makeCharts.js');
 
 const dataPath = path.join(__dirname, 'data');
-
 if (!fs.existsSync(dataPath)) {
     fs.mkdirSync(dataPath);
+}
+
+const otcPath = path.join(__dirname, 'otc');
+if (!fs.existsSync(otcPath)) {
+    fs.mkdirSync(otcPath);
 }
 
 /**
@@ -54,10 +58,10 @@ let getters = {
 };
 
 let checkData = {
-    checkFileDir() {
+    checkFileDir(_path) {
         try {
             const fileDir = getDateType('YYYYMM');
-            const dirName = path.join(dataPath, fileDir);
+            const dirName = path.join(_path, fileDir);
             if (!fs.existsSync(dirName)) {
                 fs.mkdirSync(dirName);
             }
@@ -67,13 +71,13 @@ let checkData = {
             }
             return file;
         } catch (e) {
-            console.warn('checkFileDir: ', e);
+            console.warn(`checkFileDir = ${_path}: `, e);
             return false;
         }
     },
-    async setFileDate() {
-        let response = await this.getApiData();
-        const fileName = this.checkFileDir();
+    async setVolFileDate() {
+        let response = await this.getApiData('vol');
+        const fileName = this.checkFileDir(dataPath);
         if (response && fileName) {
             let fileData = {
                 time: +new Date(),
@@ -87,18 +91,45 @@ let checkData = {
             fs.appendFileSync(fileName, jsonStr);
         }
     },
-    async getApiData() {
+    async setOtcFileDate() {
+        let response = await this.getApiData('otc');
+        const fileName = this.checkFileDir(otcPath);
+        if (response && fileName) {
+            let fileData = {
+                time: +new Date(),
+                data: response,
+            };
+            let jsonStr = JSON.stringify(fileData);
+            let fileLen = (fs.readFileSync(fileName) || '').toString().length;
+            if (fileLen > 2) {
+                jsonStr = ',' + jsonStr;
+            }
+            fs.appendFileSync(fileName, jsonStr);
+        }
+    },
+    async getApiData(type) {
         try {
-            const {data: {data}} = await axios.get(`https://www.huobi.vc/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
-            if (data) {
-                return data;
+            if (type === 'vol') {
+                const {data: {data}} = await axios.get(`https://www.huobi.vc/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
+                if (data) {
+                    return data;
+                }
+            } else if (type === 'otc') {
+                const {data: {data}} = await axios.get(`https://otc-api.eiijo.cn/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general&v=${Math.random()}`);
+                if (data && data.length) {
+                    const {price} = data[0] || {};
+                    if (price) {
+                        return price
+                    }
+                }
             }
         } catch (e) {
             console.warn('>>>>>>>>>>>>>>> Get Api data error!', e);
         }
     },
     timeEvent() {
-        this.setFileDate();
+        this.setVolFileDate();
+        this.setOtcFileDate();
         setTimeout(() => {
             this.timeEvent()
         }, 1000 * 60);
