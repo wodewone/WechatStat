@@ -5,9 +5,9 @@ const moment = require('moment');
 
 const makeCharts = require('../charts/makeCharts.js');
 
-const dataPath = path.join(__dirname, 'data');
-if (!fs.existsSync(dataPath)) {
-    fs.mkdirSync(dataPath);
+const volPath = path.join(__dirname, 'data');
+if (!fs.existsSync(volPath)) {
+    fs.mkdirSync(volPath);
 }
 
 const otcPath = path.join(__dirname, 'otc');
@@ -77,7 +77,7 @@ let checkData = {
     },
     async setVolFileDate() {
         let response = await this.getApiData('vol');
-        const fileName = this.checkFileDir(dataPath);
+        const fileName = this.checkFileDir(volPath);
         if (response && fileName) {
             let fileData = {
                 time: +new Date(),
@@ -143,6 +143,7 @@ let checkData = {
 checkData.init();
 
 module.exports = volume = {
+    dataPath: null,
     periodArr: ['min', 'hour', 'day', 'week', 'month'],
     number2count(num) {
         if (num < 1000) {
@@ -181,22 +182,27 @@ module.exports = volume = {
     },
     /**
      * 处理数据源
+     * @param type          数据类型    [vol, otc]
      * @param period        统计周期    [min, day, week, month]
-     *        min
      * @param limit         数据量，条数
-     * @param density        数据频次，单位：min
+     * @param density       数据频次，单位：min
      * @param date          起始数据日期    period = min时传入date有效
      * @param offset        数据偏移值
      * @param full          是否全量输出（例 需要200条数据，但是只找到100条，以空补白）
      * @returns {*}
      */
-    getChartData: function ({period = 'day', limit, density = 1, date = '', offset = 0, full = true}) {
+    getChartData: function ({type = 'vol', period = 'day', limit, density = 1, date = '', offset = 0, full = true}) {
         //period = period || 'day';
         //limit = limit || 10;
         //density = density || 1;
         //date = date || '';
         if (!this.periodArr.includes(period)) {
             return {};
+        }
+        if (type === 'vol') {
+            this.dataPath = volPath;
+        } else {
+            this.dataPath = otcPath;
         }
         if (period !== 'min') {
             limit = limit || 10;
@@ -225,8 +231,13 @@ module.exports = volume = {
         return curData.reduce((so, cur, index) => {
             const {time, data} = cur;
             so.labels.push(time ? this.handlerDateFormat({time, period, index, total: curData.length}) : '');
-            // 处理数据单位为亿
-            so.series.push(data ? (data / 100000000).toFixed(4) : '');
+            if (type === 'vol') {
+                // 处理数据单位为亿
+                so.series.push(data ? (data / 100000000).toFixed(4) : '');
+            }
+            if (type === 'otc') {
+                so.series.push(data ? (data).toFixed(4) : '');
+            }
             return so;
         }, {
             labels: [],
@@ -280,7 +291,7 @@ module.exports = volume = {
             let dataArr = this.getMonthFile({dirName, limit: periodLen, offset}) || [];
             response = dataArr.map((fileName) => {
                 if (fileName.includes('.json')) {
-                    const dir = path.join(dataPath, fileName.substr(0, 6));
+                    const dir = path.join(this.dataPath, fileName.substr(0, 6));
                     const file = fs.readFileSync(path.join(dir, fileName));
                     return this.handlerAveData(this.handlerFileData(file), fileName.split('.')[0]) || {};
                 }
@@ -295,14 +306,14 @@ module.exports = volume = {
     },
     getFileData({period, limit, date, full, offset}) {
         const fileDir = getDateType('YYYYMM', date);
-        const dirName = path.join(dataPath, fileDir);
+        const dirName = path.join(this.dataPath, fileDir);
 
         if (period === 'min') {
             return this.getDataMin({dirName, limit, date});
         }
-        if (period === 'hours') {
-
-        }
+        // if (period === 'hours') {
+        //
+        // }
         return this.getDataDays({dirName, limit, offset, full, period});
     },
     getMonthFile({dirName, limit, index = 1, data, offset}) {
@@ -310,7 +321,7 @@ module.exports = volume = {
         firstData = (offset && firstData) ? firstData.slice(0, -offset) : firstData;
         let dataArr = data || firstData || [];
         if (dataArr.length < limit) {
-            const curDirName = path.join(dataPath, moment().month(moment().month() - index).startOf('month').format('YYYYMM'));
+            const curDirName = path.join(this.dataPath, moment().month(moment().month() - index).startOf('month').format('YYYYMM'));
             if (!fs.existsSync(curDirName)) {
                 return dataArr;
             }

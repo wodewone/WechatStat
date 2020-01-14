@@ -5,6 +5,7 @@ const moment = require('moment');
 const volume = require('./volume');
 const fear = require('./fear');
 const market = require('./market');
+const otc = require('./otc');
 
 const {SERVER_URL, PRO_PORT, WECHAT_CONFIG} = require('./config/config');
 const {responseTimeOut} = require('./plugin/utils');
@@ -52,6 +53,14 @@ app.use(wechat(WECHAT_CONFIG).middleware(async (msg, ctx, next) => {
         if (title.includes('行情') || title.includes('market')) {
             getLog('market');
             return responseTimeOut({resp: `${SERVER_URL}/wechat/market.svg`}, market.getChart({limit: title.match(/[0-9]+/g) || 7}));
+        }
+        if (title.includes('汇率') || title.includes('usdt')) {
+            getLog('otc');
+            const period = volume.periodArr.includes(title.split(/ +/g)[1]) ? title.split(/ +/g)[1] : 'day';
+            const params = title.match(/[0-9]+/g) || [];
+            const limit = params[0] || 10;
+            const density = params[1] || 1;
+            return responseTimeOut({resp: `${SERVER_URL}/wechat/otc.svg`}, otc.getChart({period, limit, density}));
         }
         if (title === '历史记录') {
             getLog('历史记录');

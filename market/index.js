@@ -27,4 +27,4 @@ module.exports = market = {
     }
 };
 
-market.getChart({limit: 30, local: 1});
+// market.getChart({limit: 30, local: 1});
