@@ -110,7 +110,7 @@ let checkData = {
     async getApiData(type) {
         try {
             if (type === 'vol') {
-                const {data: {data}} = await axios.get(`https://www.huobi.vc/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
+                const {data: {data}} = await axios.get(`https://www.huobi.me/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
                 if (data) {
                     return data;
                 }
