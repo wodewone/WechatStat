@@ -110,10 +110,21 @@ let checkData = {
     async getApiData(type) {
         try {
             if (type === 'vol') {
-                const {data: {data}} = await axios.get(`https://www.huobi.me/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`);
-                if (data) {
-                    return data;
-                }
+                const list = [
+                    'www.huobi.me',
+                    'www.huobi.ec',
+                    'www.huobi.com.vn',
+                    'www.huobi.com.gi',
+                    'www.huobi.uk.com',
+                    'www.huobi.li',
+                    'www.huobi.com.bi',
+                    'www.huobi.ci',
+                    'www.huobi.gf',
+                    'www.huobi.as',
+                    'www.huobi.pr',
+                ].map(url => axios.get(`https://${url}/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`));
+                const {data: {data}} = await Promise.race(list);
+                return data || null;
             } else if (type === 'otc') {
                 const {data: {data}} = await axios.get(`https://otc-api.eiijo.cn/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general&v=${Math.random()}`);
                 if (data && data.length) {
