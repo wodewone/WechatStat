@@ -126,7 +126,11 @@ let checkData = {
                 const {data: {data}} = await Promise.race(list);
                 return data || null;
             } else if (type === 'otc') {
-                const {data: {data}} = await axios.get(`https://otc-api.eiijo.cn/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general&v=${Math.random()}`);
+                const list = [
+                    'otc-api-hk.eiijo.cn',
+                    'otc-api.eiijo.cn',
+                ].map(url => axios.get(`https://${url}/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general&v=${Math.random()}`));
+                const {data: {data}} = await Promise.race(list);
                 if (data && data.length) {
                     const {price} = data[0] || {};
                     if (price) {
