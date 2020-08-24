@@ -1,33 +1,19 @@
 const MONGODB = require('mongodb').MongoClient;
 
-const DBNAME = 'blockchain';
-const URL = 'mongodb://localhost:27017/' + DBNAME;
-
-const database = async ({collectName = 'huobi', }) => {
-    let connect;
-    try {
-        connect = await MONGODB.connect(URL, {useNewUrlParser: true});
-    } catch (e) {
-        console.warn('Connection database error!!');
-        connect && connect.close();
-        return false;
+let db = null;
+module.exports = {
+    instance: async (dbName = 'huobi') => {
+        if (!db) {
+            console.info('##### Start connection database!! #####');
+            try {
+                const URL = 'mongodb://localhost:27017/' + dbName;
+                db = await MONGODB.connect(URL, {useNewUrlParser: true, useUnifiedTopology: true});
+            } catch (e) {
+                console.warn('##### Connection database error!! #####');
+                db && db.close();
+                return false;
+            }
+        }
+        return db;
     }
-    const db = connect.db(DBNAME);
-    const base = db.collection(collectName);
-
-    console.info('check db validate? ', base);
-    return {
-        async add(document) {
-            const res = await base.insertMany(document);
-            console.info('Database: ', 'add', res);
-            return res;
-        },
-        async find (query = null) {
-            const res = await base.find(query).toArray();
-            console.info('Database: ', 'find', res);
-            return res;
-        },
-    };
 };
-
-module.exports = database;
