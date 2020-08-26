@@ -25,6 +25,10 @@
 
 ```pm2 delete ecosystem.config.js```
 
+### Update
+
+- 2020-08-24 增加数据库存储数据（Mongodb）
+
 ### Record
 
 [Node Chart工具](https://itbilu.com/nodejs/npm/BkCASacpm.html)
