@@ -4,6 +4,7 @@ const axios = require('axios');
 const moment = require('moment');
 
 const makeCharts = require('../charts/makeCharts.js');
+const {insertData} = require('../plugin/handlerDatabase');
 
 const volPath = path.join(__dirname, 'data');
 if (!fs.existsSync(volPath)) {
@@ -83,12 +84,13 @@ let checkData = {
                 time: +new Date(),
                 data: response,
             };
-            let jsonStr = JSON.stringify(fileData);
-            let fileLen = (fs.readFileSync(fileName) || '').toString().length;
-            if (fileLen > 2) {
-                jsonStr = ',' + jsonStr;
-            }
-            fs.appendFileSync(fileName, jsonStr);
+            await insertData(fileData)
+            // let jsonStr = JSON.stringify(fileData);
+            // let fileLen = (fs.readFileSync(fileName) || '').toString().length;
+            // if (fileLen > 2) {
+            //     jsonStr = ',' + jsonStr;
+            // }
+            // fs.appendFileSync(fileName, jsonStr);
         }
     },
     async setOtcFileDate() {
@@ -147,7 +149,7 @@ let checkData = {
         this.setOtcFileDate();
         setTimeout(() => {
             this.timeEvent()
-        }, 1000 * 60);
+        }, 1000 * 5);
     },
     init() {
         console.info('>Stat< start huobi volume & recorded data!');
