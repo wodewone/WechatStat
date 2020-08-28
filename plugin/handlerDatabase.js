@@ -2,7 +2,8 @@ const Decimal = require('decimal.js');
 const moment = require('moment');
 const db = require('./mongodb');
 
-// TODO: API http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#find
+// TODO:【mongodb】API http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html
+// TODO:【decimal.js】API http://mikemcl.github.io/decimal.js/
 
 const getCollection = async ({dbName = 'huobi', collectName = 'kline'} = {}) => {
     const client = await db.instance(dbName);
@@ -31,98 +32,168 @@ const utils = {
 };
 
 const database = {
-    async getTodayKline(collection) {
+    checkDateName(name) {
+    },
+
+    async getDayKline(dateline) {
+        const collectName = `key_${moment(dateline).format('YYYYMM')}`;
+
         const {amendDateTime, getNextDateTime, time2date} = utils;
-        const q1 = +amendDateTime(time2date(new Date()));
-        const q2 = +amendDateTime(time2date(getNextDateTime()));
-        const data = await collection.find({time: {$gt: q1, $lt: q2}}, {projection: {"data": 1, "_id": 0}}).toArray();
-        return data;
+        const q1 = +amendDateTime(time2date(dateline));
+        const q2 = +amendDateTime(time2date(getNextDateTime(dateline)));
+
+        const {findData} = database;
+        return findData(collectName, {time: {$gt: q1, $lt: q2}}, {projection: {"data": 1, "_id": 0}});
     },
 
-    async handlerUpdateData(array = []) {
-        const _d = {
-            high: 0,
-            low: 0,
-            open: 0,
-            close: 0,
-        };
-        if (typeof array !== "object" || !array.length) {
-            return _d;
-        }
-        const {data: open = 0} = array[0] || {};
-        const {data: close = 0} = array[array.length - 1] || {};
-        let info = {..._d, open, close};
-
-        const val = array.reduce((so, {data = 0}) => {
-            const {high, low} = so;
-            so.high = Decimal.max(high, data);
-            so.low = Decimal.min(low, data);
-        }, info);
-        console.info('get u d: ', array, val);
-        return val;
-    },
-
-    async updateDayKline(value) {
-        const collectName = `k${moment().format('YYYYMM')}`;
-        const {getTodayKline, createDayKline, handlerUpdateData, updateData} = database;
-        const collection = await getCollection({collectName});
-        const todayKline = await getTodayKline(collection);
-
-        const {time2date, getAveraging} = utils;
-        const date = time2date();
-        // const today = await collection.find({date}).toArray();
-        if (todayKline.length) {
-            const ave = getAveraging(todayKline);
-            // const klineList = await collection.find({date}).toArray();
-            await updateData(collectName, {date}, {...await handlerUpdateData(todayKline), ave});
-        } else {
-            if (!await createDayKline({date})) {
-                console.warn('##### createDayKline error! #####');
-            }
-        }
-        // console.info('find date: ', todayKline);
-    },
-
-    async createDayKline({date = null, ave = 0, high = 0, low = 0, open = 0, close = 0} = {}) {
-        if (!date) {
+    async handlerMarketList(datalist = []) {
+        if (!datalist.length) {
             return false;
         }
-        const collectName = `kline${moment().format('YYYY')}`;
-        const collection = await getCollection({collectName});
-        return await collection.insertOne({date, ave, high, low, open, close});
+
+        const {data: open = 0} = datalist[0] = {};
+        const {data: close = 0} = datalist[datalist.length - 1] = {};
+
+        return datalist.reduce((so, {data = 0}) => {
+            const {high, low} = so;
+            so.high = Math.max(high, data);
+            so.low = Math.min(low, data);
+            return so;
+        }, {open, close, high: 0, low: Infinity});
     },
 
-    async insertData(obj = {time: 0, data: 0}) {
-        const tableName = `k${moment().format('YYYYMM')}`;
-        const collection = await getCollection({collectName: tableName});
-        console.info('Ready insert data to: ', tableName, ' And data: ', obj);
-        await collection.insertOne(obj);
-        await database.updateDayKline(obj.data);
+    async handlerMarketValue(value = 0, {collectName, date}) {
+        const {findData} = database;
+        const [dateKline] = await findData(collectName, {date}, {
+            projection: {
+                "low": 1,
+                "high": 1,
+                "_id": 0
+            }
+        });
+        console.info(1411, collectName, date, dateKline);
+        if (dateKline) {
+            const {low, high} = dateKline;
+            return {
+                close: value,
+                low: Math.min(low, value),
+                high: Math.max(high, value)
+            };
+        } else {
+            return {
+                high: value,
+                low: Infinity,
+                open: value,
+                close: value,
+            };
+        }
     },
+
+    async getMarketsValue(doc = {} || [], {collectName, dateline}) {
+        const {getAveraging} = utils;
+        const {getDayKline, handlerMarketValue, handlerMarketList} = database;
+
+        const {time, data: defaultValue = 0} = (Array.isArray(doc) ? doc[0] : doc) || {};
+
+        const dayKline = Array.isArray(doc) ? doc : await getDayKline(dateline);
+
+        const ave = getAveraging(dayKline) || defaultValue;
+
+        const market = Array.isArray(doc) ? await handlerMarketList(doc) : await handlerMarketValue(defaultValue, {
+            collectName,
+            dateline
+        });
+
+        return {...market, ave};
+    },
+
+    async updateDayKline(doc, dateline) {
+        const collectName = `kline_${moment(dateline).format('YYYY')}`;
+        const {getMarketsValue, updateData} = database;
+        const {time2date} = utils;
+
+        const setData = await getMarketsValue(doc, {collectName, dateline});
+
+        const date = time2date(dateline);
+        await updateData(collectName, {date}, setData);
+    },
+
+    // async createDayKline({date = null, ave = 0, high = 0, low = 0, open = 0, close = 0} = {}) {
+    //     if (!date) {
+    //         return false;
+    //     }
+    //     const collectName = `kline${moment().format('YYYY')}`;
+    //     const collection = await getCollection({collectName});
+    //     return await collection.insertOne({date, ave, high, low, open, close});
+    // },
+
+    /**
+     *
+     * @param collectName
+     * @param query
+     * @param options
+     * @returns {Promise<Promise|number[]|void|any[]>}
+     */
+    async findData(collectName, query, options) {
+        const collection = await getCollection({collectName});
+        return collection.find(query, options).toArray();
+    },
+
+    /**
+     *
+     * @param document  [Object...] | Object (Object = {time: 0, data: 0})
+     * @param date      date | datetime | timestamp
+     * @returns {Promise<void>}
+     */
+    async insertData(document, date = new Date()) {
+        if (!document) {
+            return null;
+        }
+        const tableName = `key_${moment(date).format('YYYYMM')}`;
+        const collection = await getCollection({collectName: tableName});
+        try {
+            if (Array.isArray(document)) {
+                console.info('[Info] Ready insert data to: ', tableName, ' And data list: ', document.length);
+                await collection.insertMany(document);
+            } else {
+                console.info('[Info] Ready insert data to: ', tableName, ' And data: ', document);
+                await collection.insertOne(document);
+            }
+        } catch (e) {
+            console.warn('[Warn] insertData: ', e);
+        }
+    },
+
     async updateData(collectName, query, data) {
         const collection = await getCollection({collectName});
-        await collection.updateOne(query, {$set: data});
+        console.info(8871, query, data);
+        try {
+            await collection.updateOne(query, {$set: data}, {upsert: true});
+        } catch (e) {
+            console.warn('[Warn] updateData: ', e);
+        }
     },
 };
 
-const {insertData} = database;
+const {insertData, updateDayKline} = database;
+module.exports = {insertData, updateDayKline};
 
-module.exports = {insertData};
+// insertData({"time":1569859213126,"data":8183505176.23391});
 
-// me.insertData({"time":1569859213126,"data":8183505176.23391});
+updateDayKline([{"time": 1569859213126, "data": 123.12345}, {"time": 1569859213126, "data": 456.456}, {"time": 1569859213126, "data": 789.789}, {"time": 1569859213126, "data": 4321.4321}, {"time": 1569859213126, "data": 10.456}], '2019-08-27').then(r => {});
 
 // {
-//     201907: [
+//     key_201907: [
 //         {"time":1564588858477,"data":5587929951.3230505},
 //         {"time":1564588858477,"data":5587929951.3230505},
 //         {"time":1564588858477,"data":5587929951.3230505},
 //     ],
-//     201908: [
+//     key_201908: [
 //         {"time":1564588858477,"data":5587929951.3230505},
 //         {"time":1564588858477,"data":5587929951.3230505},
 //         {"time":1564588858477,"data":5587929951.3230505},
 //     ],
-//     kline[2019]: [
+//     kline_[2019]: [
 //         {
 //             "date": "2019-08-07",
 //             "ave": 5587929951.3230505,

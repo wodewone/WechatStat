@@ -84,13 +84,12 @@ let checkData = {
                 time: +new Date(),
                 data: response,
             };
-            await insertData(fileData)
-            // let jsonStr = JSON.stringify(fileData);
-            // let fileLen = (fs.readFileSync(fileName) || '').toString().length;
-            // if (fileLen > 2) {
-            //     jsonStr = ',' + jsonStr;
-            // }
-            // fs.appendFileSync(fileName, jsonStr);
+            let jsonStr = JSON.stringify(fileData);
+            let fileLen = (fs.readFileSync(fileName) || '').toString().length;
+            if (fileLen > 2) {
+                jsonStr = ',' + jsonStr;
+            }
+            fs.appendFileSync(fileName, jsonStr);
         }
     },
     async setOtcFileDate() {
@@ -157,7 +156,7 @@ let checkData = {
     },
 };
 
-checkData.init();
+// checkData.init();
 
 module.exports = volume = {
     dataPath: null,
@@ -395,3 +394,28 @@ module.exports = volume = {
 
 // volume.getChart({period: 'min', limit: '100', density: 1, date: '', local: 1});
 // volume.getChartData({limit: '120', offset: 1, local: 1});
+
+(function () {
+    const dir = fs.readdirSync(volPath);
+    const filesList = dir.map(month => {
+        const monthPath = path.join(volPath, month);
+        const fileList = fs.readdirSync(monthPath);
+        return fileList.map(file => {
+            return {
+                path: path.join(monthPath, file),
+                name: file.split('.')[0]
+            };
+        });
+    });
+    console.info(1922, filesList);
+    const list = filesList.map(item => {
+        return item.map(async ({path, name}) => {
+            console.info(9811, path);
+            const content = fs.readFileSync(path);
+            const json = JSON.parse('[' + content + ']');
+            await insertData(json, name);
+            return name;
+        });
+    });
+    console.info(1911, list);
+})();
