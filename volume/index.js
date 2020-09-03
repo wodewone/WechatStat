@@ -397,7 +397,10 @@ module.exports = volume = {
 
 (function () {
     const dir = fs.readdirSync(volPath);
-    const filesList = dir.map(month => {
+    const filesList = dir.filter(dirName => {
+        const dirPath = path.join(volPath, dirName);
+        return fs.statSync(dirPath).isDirectory();
+    }).map(month => {
         const monthPath = path.join(volPath, month);
         const fileList = fs.readdirSync(monthPath);
         return fileList.map(file => {
@@ -407,7 +410,7 @@ module.exports = volume = {
             };
         });
     });
-    console.info(1922, filesList);
+    console.info(1922, dir, filesList);
     const list = filesList.map(item => {
         return item.map(async ({path, name}) => {
             console.info(9811, path);
