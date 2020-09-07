@@ -4,6 +4,7 @@ const db = require('./mongodb');
 
 // TODO:【mongodb】API http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html
 // TODO:【decimal.js】API http://mikemcl.github.io/decimal.js/
+// TODO:【cloud】URL https://cloud.mongodb.com/
 
 const utils = {
     amendDateTime(date = '2001-01-01') {
