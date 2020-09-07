@@ -5,13 +5,6 @@ const db = require('./mongodb');
 // TODO:【mongodb】API http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html
 // TODO:【decimal.js】API http://mikemcl.github.io/decimal.js/
 
-const getCollection = async ({dbName = 'huobi', collectName = 'kline'} = {}) => {
-    const client = await db.instance(dbName);
-    let collection = null;
-    collection = await client.db(dbName).collection(collectName);
-    return collection;
-};
-
 const utils = {
     amendDateTime(date = '2001-01-01') {
         return new Date(`${date} 00:00:00`);
@@ -31,18 +24,45 @@ const utils = {
     },
 };
 
-const database = {
-    checkDateName(name) {
+module.exports = database = {
+    dbName: 'huobi',
+
+    async getCollection(collectName) {
+        const {dbName} = this;
+        const client = await db.instance(dbName).catch(e => console.warn('[Info] get collection instance error:', e));
+        return client.db(dbName).collection(collectName);
+    },
+
+    getCollectName(key, date) {
+        const collectionName = {
+            key: {
+                prefix: 'key_',
+                dateFormat: 'YYYYMM'
+            },
+            set: {
+                prefix: 'kline_',
+                dateFormat: 'YYYY'
+            }
+        };
+        const item = collectionName[key];
+        if (!item) {
+            return key;
+        }
+        if (!moment(date).isValid()) {
+            return null;
+        }
+        const {prefix, dateFormat} = item;
+        return prefix + moment(date).format(dateFormat);
     },
 
     async getDayKline(dateline) {
-        const collectName = `key_${moment(dateline).format('YYYYMM')}`;
+        const {findData, getCollectName} = this;
+        const collectName = getCollectName('key', dateline);
 
         const {amendDateTime, getNextDateTime, time2date} = utils;
         const q1 = +amendDateTime(time2date(dateline));
         const q2 = +amendDateTime(time2date(getNextDateTime(dateline)));
 
-        const {findData} = database;
         return findData(collectName, {time: {$gt: q1, $lt: q2}}, {projection: {"data": 1, "_id": 0}});
     },
 
@@ -51,8 +71,8 @@ const database = {
             return false;
         }
 
-        const {data: open = 0} = datalist[0] = {};
-        const {data: close = 0} = datalist[datalist.length - 1] = {};
+        const {data: open = 0} = datalist[0] || {};
+        const {data: close = 0} = datalist[datalist.length - 1] || {};
 
         return datalist.reduce((so, {data = 0}) => {
             const {high, low} = so;
@@ -62,22 +82,22 @@ const database = {
         }, {open, close, high: 0, low: Infinity});
     },
 
-    async handlerMarketValue(value = 0, {collectName, date}) {
-        const {findData} = database;
+    async handlerMarketValue(value = 0, {collectName, dateline: date}) {
+        const {findData} = this;
         const [dateKline] = await findData(collectName, {date}, {
             projection: {
-                "low": 1,
-                "high": 1,
+                "date": 0,
                 "_id": 0
             }
         });
-        console.info(1411, collectName, date, dateKline);
+        console.log(6512, dateKline);
         if (dateKline) {
-            const {low, high} = dateKline;
+            const {close, low, high} = dateKline;
             return {
-                close: value,
-                low: Math.min(low, value),
-                high: Math.max(high, value)
+                ...dateKline,
+                close: value || close,
+                low: Math.min(low, value) || low,
+                high: Math.max(high, value) || high
             };
         } else {
             return {
@@ -91,7 +111,7 @@ const database = {
 
     async getMarketsValue(doc = {} || [], {collectName, dateline}) {
         const {getAveraging} = utils;
-        const {getDayKline, handlerMarketValue, handlerMarketList} = database;
+        const {getDayKline, handlerMarketValue, handlerMarketList} = this;
 
         const {time, data: defaultValue = 0} = (Array.isArray(doc) ? doc[0] : doc) || {};
 
@@ -107,25 +127,23 @@ const database = {
         return {...market, ave};
     },
 
-    async updateDayKline(doc, dateline) {
-        const collectName = `kline_${moment(dateline).format('YYYY')}`;
-        const {getMarketsValue, updateData} = database;
+    async updateDayKline(doc, dateline, dbName) {
+        const {getMarketsValue, updateData, getCollectName, setDbName} = this;
         const {time2date} = utils;
 
+        dbName && setDbName(dbName);
+
+        const collectName = getCollectName('set', dateline);
+        if (!collectName) {
+            return {
+                error: '找不到对应数据'
+            }
+        }
+
         const setData = await getMarketsValue(doc, {collectName, dateline});
-
         const date = time2date(dateline);
-        await updateData(collectName, {date}, setData);
+        await updateData({date}, setData, {dbName, collectName});
     },
-
-    // async createDayKline({date = null, ave = 0, high = 0, low = 0, open = 0, close = 0} = {}) {
-    //     if (!date) {
-    //         return false;
-    //     }
-    //     const collectName = `kline${moment().format('YYYY')}`;
-    //     const collection = await getCollection({collectName});
-    //     return await collection.insertOne({date, ave, high, low, open, close});
-    // },
 
     /**
      *
@@ -135,7 +153,7 @@ const database = {
      * @returns {Promise<Promise|number[]|void|any[]>}
      */
     async findData(collectName, query, options) {
-        const collection = await getCollection({collectName});
+        const collection = await this.getCollection(collectName);
         return collection.find(query, options).toArray();
     },
 
@@ -143,45 +161,58 @@ const database = {
      *
      * @param document  [Object...] | Object (Object = {time: 0, data: 0})
      * @param date      date | datetime | timestamp
+     * @param dbName
      * @returns {Promise<void>}
      */
-    async insertData(document, date = new Date()) {
+    async insertData(document, date = new Date(), dbName) {
         if (!document) {
             return null;
         }
-        const tableName = `key_${moment(date).format('YYYYMM')}`;
-        const collection = await getCollection({collectName: tableName});
+        const {getCollection, getCollectName, setDbName} = this;
+
+        dbName && setDbName(dbName);
+
+        const tableName = getCollectName('key', date);
+        const collection = await getCollection(tableName);
         try {
             if (Array.isArray(document)) {
                 console.info('[Info] Ready insert data to: ', tableName, ' And data list: ', document.length);
-                await collection.insertMany(document);
+                return collection.insertMany(document);
             } else {
                 console.info('[Info] Ready insert data to: ', tableName, ' And data: ', document);
-                await collection.insertOne(document);
+                return collection.insertOne(document);
             }
         } catch (e) {
-            console.warn('[Warn] insertData: ', e);
+            console.warn('[Warn] insert data: ', e);
+            return 'InsertData error';
         }
     },
 
-    async updateData(collectName, query, data) {
-        const collection = await getCollection({collectName});
-        console.info(8871, query, data);
+    async updateData(query, data, db = {}) {
+        const {collectName} = db;
+        if (!query || !data || !collectName) {
+            return false
+        }
+        const collection = await this.getCollection(collectName);
         try {
             await collection.updateOne(query, {$set: data}, {upsert: true});
         } catch (e) {
-            console.warn('[Warn] updateData: ', e);
+            console.warn('[Warn] update data: ', e);
         }
+    },
+
+    setDbName(name) {
+        this.dbName = name;
     },
 };
 
-const {insertData, updateDayKline} = database;
-module.exports = {insertData, updateDayKline};
-
 // insertData({"time":1569859213126,"data":8183505176.23391});
+// const ss = ['20200425', '20200426', '20200427', '20200428', '20200429', '20200430', '20200501', '20200502', '20200503', '20200504', '20200505', '20200506', '20200507'];
+// ss.map(i => {
+//     updateDayKline({}, i).then(r => {});
+// });
 
-updateDayKline([{"time": 1569859213126, "data": 123.12345}, {"time": 1569859213126, "data": 456.456}, {"time": 1569859213126, "data": 789.789}, {"time": 1569859213126, "data": 4321.4321}, {"time": 1569859213126, "data": 10.456}], '2019-08-27').then(r => {});
-
+/* DEMO */
 // {
 //     key_201907: [
 //         {"time":1564588858477,"data":5587929951.3230505},

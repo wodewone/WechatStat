@@ -4,7 +4,7 @@ const axios = require('axios');
 const moment = require('moment');
 
 const makeCharts = require('../charts/makeCharts.js');
-const {insertData} = require('../plugin/handlerDatabase');
+const database = require('../plugin/handlerDatabase');
 
 const volPath = path.join(__dirname, 'data');
 if (!fs.existsSync(volPath)) {
@@ -367,6 +367,8 @@ module.exports = volume = {
     },
     async getChart({period, limit, density, date, local}) {
         let {labels, series} = this.getChartData({period, limit, density, date, full: false});
+        // const list = await findData();
+        // const {labels, series} = ;
         if (!series) {
             return '没有找到相关数据，请检查数据正确性……';
         }
@@ -395,13 +397,16 @@ module.exports = volume = {
 // volume.getChart({period: 'min', limit: '100', density: 1, date: '', local: 1});
 // volume.getChartData({limit: '120', offset: 1, local: 1});
 
-(function () {
-    const dir = fs.readdirSync(volPath);
+/* 导入[./data]数据到 mongodb Cloud [https://cloud.mongodb.com/] */
+(async function () {
+    const {insertData, updateDayKline, findData} = database;
+    const dataPath = otcPath;
+    const dir = fs.readdirSync(dataPath);
     const filesList = dir.filter(dirName => {
-        const dirPath = path.join(volPath, dirName);
+        const dirPath = path.join(dataPath, dirName);
         return fs.statSync(dirPath).isDirectory();
     }).map(month => {
-        const monthPath = path.join(volPath, month);
+        const monthPath = path.join(dataPath, month);
         const fileList = fs.readdirSync(monthPath);
         return fileList.map(file => {
             return {
@@ -410,15 +415,47 @@ module.exports = volume = {
             };
         });
     });
-    console.info(1922, dir, filesList);
-    const list = filesList.map(item => {
-        return item.map(async ({path, name}) => {
-            console.info(9811, path);
-            const content = fs.readFileSync(path);
-            const json = JSON.parse('[' + content + ']');
-            await insertData(json, name);
-            return name;
-        });
-    });
-    console.info(1911, list);
+
+    function* iteratorFun() {
+        const len = filesList.length;
+        for (let i = 0; i < len; i++) {
+            const item = filesList[i];
+            for (let j = 0; j < item.length; j++) {
+                yield item[j];
+            }
+        }
+    }
+
+    let iterator = iteratorFun();
+    let iteratorItem = iterator.next();
+    let errList = [];
+
+    while (!iteratorItem.done) {
+        const {value} = iteratorItem;
+        const {path, name} = value;
+
+        const content = fs.readFileSync(path);
+        const jsonArr = JSON.parse('[' + content + ']');
+
+        try {
+            await insertData(jsonArr, name, 'huobi_otc');
+            await updateDayKline(jsonArr, name, 'huobi_otc');
+        } catch (e) {
+            errList.push(value);
+        }
+
+        iteratorItem = iterator.next();
+    }
+
+    console.log(1911, errList);
 })();
+
+/* test change dbName */
+// (async function () {
+//     const {setDbName, findData, getCollectName} = database;
+//     setDbName('huobi_otc');
+//     const collectName = getCollectName('key', new Date());
+//     console.log(7112, collectName);
+//     const data = await findData(collectName);
+//     console.log(1711, data);
+// })();
