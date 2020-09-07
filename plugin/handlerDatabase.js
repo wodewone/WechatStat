@@ -4,7 +4,6 @@ const db = require('./mongodb');
 
 // TODO:【mongodb】API http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html
 // TODO:【decimal.js】API http://mikemcl.github.io/decimal.js/
-// TODO:【cloud】URL https://cloud.mongodb.com/
 
 const utils = {
     amendDateTime(date = '2001-01-01') {
@@ -28,8 +27,12 @@ const utils = {
 module.exports = database = {
     dbName: 'huobi',
 
+    setDbName(name) {
+        database.dbName = name;
+    },
+
     async getCollection(collectName) {
-        const {dbName} = this;
+        const {dbName} = database;
         const client = await db.instance(dbName).catch(e => console.warn('[Info] get collection instance error:', e));
         return client.db(dbName).collection(collectName);
     },
@@ -57,7 +60,7 @@ module.exports = database = {
     },
 
     async getDayKline(dateline) {
-        const {findData, getCollectName} = this;
+        const {findData, getCollectName} = database;
         const collectName = getCollectName('key', dateline);
 
         const {amendDateTime, getNextDateTime, time2date} = utils;
@@ -84,7 +87,7 @@ module.exports = database = {
     },
 
     async handlerMarketValue(value = 0, {collectName, dateline: date}) {
-        const {findData} = this;
+        const {findData} = database;
         const [dateKline] = await findData(collectName, {date}, {
             projection: {
                 "date": 0,
@@ -112,7 +115,7 @@ module.exports = database = {
 
     async getMarketsValue(doc = {} || [], {collectName, dateline}) {
         const {getAveraging} = utils;
-        const {getDayKline, handlerMarketValue, handlerMarketList} = this;
+        const {getDayKline, handlerMarketValue, handlerMarketList} = database;
 
         const {time, data: defaultValue = 0} = (Array.isArray(doc) ? doc[0] : doc) || {};
 
@@ -129,7 +132,7 @@ module.exports = database = {
     },
 
     async updateDayKline(doc, dateline, dbName) {
-        const {getMarketsValue, updateData, getCollectName, setDbName} = this;
+        const {getMarketsValue, updateData, getCollectName, setDbName} = database;
         const {time2date} = utils;
 
         dbName && setDbName(dbName);
@@ -154,7 +157,7 @@ module.exports = database = {
      * @returns {Promise<Promise|number[]|void|any[]>}
      */
     async findData(collectName, query, options) {
-        const collection = await this.getCollection(collectName);
+        const collection = await database.getCollection(collectName);
         return collection.find(query, options).toArray();
     },
 
@@ -169,7 +172,7 @@ module.exports = database = {
         if (!document) {
             return null;
         }
-        const {getCollection, getCollectName, setDbName} = this;
+        const {getCollection, getCollectName, setDbName} = database;
 
         dbName && setDbName(dbName);
 
@@ -194,16 +197,12 @@ module.exports = database = {
         if (!query || !data || !collectName) {
             return false
         }
-        const collection = await this.getCollection(collectName);
+        const collection = await database.getCollection(collectName);
         try {
             await collection.updateOne(query, {$set: data}, {upsert: true});
         } catch (e) {
             console.warn('[Warn] update data: ', e);
         }
-    },
-
-    setDbName(name) {
-        this.dbName = name;
     },
 };
 

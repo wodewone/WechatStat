@@ -438,9 +438,11 @@ module.exports = volume = {
         const jsonArr = JSON.parse('[' + content + ']');
 
         try {
+            // await findData('key_202009');
             await insertData(jsonArr, name, 'huobi_otc');
             await updateDayKline(jsonArr, name, 'huobi_otc');
         } catch (e) {
+            console.log(9911, e);
             errList.push(value);
         }
 
