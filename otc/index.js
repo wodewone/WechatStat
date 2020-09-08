@@ -3,11 +3,12 @@ const makeCharts = require('../charts/makeCharts.js');
 
 module.exports = otc = {
     async getChart({period, limit, density, local}) {
-        const {labels, series} = await volume.getChartData({
-            type: 'otc',
-            full: false,
-            period, limit, density,
-        });
+        // const {labels, series} = await volume.getChartData({
+        //     type: 'otc',
+        //     full: false,
+        //     period, limit, density,
+        // });
+        let {labels, series} = await this.getChartDataV2({limit, type: 'otc'});
         let mediaId = await makeCharts({
             local,
             labels,

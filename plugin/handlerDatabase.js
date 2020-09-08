@@ -14,8 +14,8 @@ const utils = {
     getNextDateTime(datetime = new Date()) {
         return moment(datetime).add(1, 'days');
     },
-    time2date(datetime = new Date()) {
-        return moment(datetime).format('YYYY-MM-DD');
+    time2date(datetime = new Date(), format = 'YYYY-MM-DD') {
+        return moment(datetime).format(format);
     },
     getAveraging(array = []) {
         const total = array.reduce((so, {data}) => {
@@ -24,6 +24,9 @@ const utils = {
         const ave = Decimal.div(total, array.length);
         return ave * 1 ? ave * 1 : 0;
     },
+    date2number(datetime = new Date(), format = 'YYYYMMDD'){
+        return moment(datetime).format(format) * 1;
+    }
 };
 
 module.exports = database = {
@@ -37,9 +40,8 @@ module.exports = database = {
         };
         if (dbList[key]) {
             database.dbName = dbList[key];
-        } else {
-            throw `Not fund DB name of ${key}`;
         }
+        return key;
     },
 
     async getCollection(collectName, force = false) {
@@ -62,8 +64,8 @@ module.exports = database = {
                 dateFormat: 'YYYYMM'
             },
             set: {
-                prefix: 'kline_',
-                dateFormat: 'YYYY'
+                prefix: 'kline',
+                dateFormat: ''
             }
         };
         const item = collectionName[key];
@@ -74,7 +76,11 @@ module.exports = database = {
             return null;
         }
         const {prefix, dateFormat} = item;
-        return prefix + moment(date).format(dateFormat);
+        if (dateFormat) {
+            return prefix + moment(date).format(dateFormat);
+        } else {
+            return prefix;
+        }
     },
 
     async getDayKline(dateline) {
@@ -106,12 +112,15 @@ module.exports = database = {
 
     async handlerMarketValue(value = 0, {collectName, dateline}) {
         const {findData} = database;
-        const {time2date} = utils;
-        const date = time2date(dateline);
+        const {date2number} = utils;
+        const date = date2number(dateline);
         const [dateKline] = await findData(collectName, {date}, {
             projection: {
-                "date": 0,
-                "_id": 0
+                "_id": 0,
+                "open": 1,
+                "close": 1,
+                "high": 1,
+                "low": 1,
             }
         });
 
@@ -153,14 +162,9 @@ module.exports = database = {
 
     async updateDayKline(doc, dateline = new Date(), dbName) {
         const {getMarketsValue, updateData, getCollectName, setDbName} = database;
-        const {time2date} = utils;
+        const {date2number} = utils;
 
-        try {
-            dbName && setDbName(dbName);
-        } catch (e) {
-            console.error(`[Warn] Execute update day kline error: ${e}`);
-            return null;
-        }
+        dbName && setDbName(dbName);
 
         const collectName = getCollectName('set', dateline);
         if (!collectName) {
@@ -170,7 +174,7 @@ module.exports = database = {
         }
 
         const setData = await getMarketsValue(doc, {collectName, dateline});
-        const date = time2date(dateline);
+        const date = date2number(dateline);
         await updateData({date}, setData, {dbName, collectName});
     },
 
@@ -190,30 +194,25 @@ module.exports = database = {
      *
      * @param document  [Object...] | Object (Object = {time: 0, data: 0})
      * @param date      date | datetime | timestamp
-     * @param dbName
+     * @param db
      * @returns {Promise<void>}
      */
-    async insertData(document, date = new Date(), dbName) {
+    async insertData(document, date = new Date(), db) {
         if (!document) {
             return null;
         }
-        const {getCollection, getCollectName, setDbName} = database;
+        const {getCollection, getCollectName, setDbName, dbName} = database;
 
-        try {
-            dbName && setDbName(dbName);
-        } catch (e) {
-            console.error(`[Warn] Execute insert data error: ${e}`);
-            return null;
-        }
+        db && setDbName(db);
 
         const tableName = getCollectName('key', date);
         const collection = await getCollection(tableName);
         try {
             if (Array.isArray(document)) {
-                console.info('[Info] Ready insert data to: ', tableName, ' And data list: ', document.length);
+                console.info('[Info] Ready insert data in: [', dbName, '] for [', tableName, '] And data list: ', document.length);
                 return collection.insertMany(document);
             } else {
-                console.info('[Info] Ready insert data to: ', tableName, ' And data: ', document);
+                console.info('[Info] Ready insert data to: [', dbName, '] for [', tableName, '] And data: ', document);
                 return collection.insertOne(document);
             }
         } catch (e) {
@@ -235,28 +234,57 @@ module.exports = database = {
         }
     },
 
-    async queryData(range = 7, type = 'volume') {
+    async queryData(range = 7, type = 'vol') {
         const {findData, getCollectName, setDbName} = database;
-        const collectName = getCollectName('key', dateline);
+        const {date2number} = utils;
 
         const dbName = {
-            volume: 'hb',
+            vol: 'hb',
             otc: 'hbOtc',
         };
         setDbName(dbName[type]);
 
-        const {amendDateTime, getNextDateTime, time2date} = utils;
-        const q1 = +amendDateTime(time2date(dateline));
-        const q2 = +amendDateTime(time2date(getNextDateTime(dateline)));
+        const today = moment().dayOfYear();
+        const startDate = date2number(moment().dayOfYear(today - range - 1));
+        const collectName = getCollectName('set');
 
-        return findData(collectName, {time: {$gt: q1, $lt: q2}}, {projection: {"data": 1, "_id": 0}});
+        return findData(collectName, {date: {$gt: startDate}}, {projection: {"ave": 1, "date": 1, "_id": 0}});
     },
 };
+
+/* ===============================[TEST]=============================== */
+
+// database.queryData(10);
+
+/* drop collection */
+// (async function f() {
+//     function* iteratorFun() {
+//         for (let i = 0; i < 87; i++) {
+//             yield i;
+//         }
+//     }
+//
+//     let iterator = iteratorFun();
+//     let iteratorItem = iterator.next();
+//
+//     db.instance('huobi').then(async client => {
+//         const db = client.db('huobi');
+//         // return console.info(988, db);
+//         while (!iteratorItem.done) {
+//             const {value} = iteratorItem;
+//             const collectName = 'kline' + moment('20190724').add(value, 'days').format();
+//             const coll = await db.collection(collectName);
+//             coll.drop();
+//             console.info(988, value);
+//             iteratorItem = iterator.next();
+//         }
+//     });
+// })()
 
 // insertData({"time":1569859213126,"data":8183505176.23391});
 // const ss = ['20200425', '20200426', '20200427', '20200428', '20200429', '20200430', '20200501', '20200502', '20200503', '20200504', '20200505', '20200506', '20200507'];
 // ss.map(i => {
-//     updateDayKline({}, i).then(r => {});
+//     database.updateDayKline({}, i).then(r => {});
 // });
 
 /* DEMO */

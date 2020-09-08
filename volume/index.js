@@ -4,7 +4,7 @@ const axios = require('axios');
 const moment = require('moment');
 
 const makeCharts = require('../charts/makeCharts.js');
-const {setDbName, insertData, updateDayKline, findData} = require('../plugin/handlerDatabase');
+const {setDbName, insertData, updateDayKline, queryData} = require('../plugin/handlerDatabase');
 
 const volPath = path.join(__dirname, 'data');
 if (!fs.existsSync(volPath)) {
@@ -62,8 +62,8 @@ let checkData = {
             fs.appendFileSync(fileName, jsonStr);
         }
     },
-    async setData2Cloud(doc) {
-        setDbName('test');
+    async setData2Cloud(doc, db) {
+        setDbName(db);
         await insertData(doc);
         await updateDayKline(doc);
     },
@@ -73,7 +73,7 @@ let checkData = {
         if (data) {
             const finalData = {time: +new Date(), data};
             this.setData2Local(finalData, fileName);
-            this.setData2Cloud(finalData);
+            this.setData2Cloud(finalData, 'hb');
         }
     },
     async setOtcFileDate() {
@@ -82,7 +82,7 @@ let checkData = {
         if (data) {
             const finalData = {time: +new Date(), data};
             this.setData2Local(finalData, fileName);
-            this.setData2Cloud(finalData);
+            this.setData2Cloud(finalData, 'hbOtc');
         }
     },
     async getApiData(type) {
@@ -125,7 +125,7 @@ let checkData = {
         this.setOtcFileDate();
         setTimeout(() => {
             this.timeEvent()
-        }, 1000 * 6);
+        }, 1000 * 60);
     },
     init() {
         console.info('>Stat< start huobi volume & recorded data!');
@@ -133,7 +133,6 @@ let checkData = {
     },
 };
 
-checkData.init();
 
 module.exports = volume = {
     dataPath: null,
@@ -237,6 +236,31 @@ module.exports = volume = {
             series: [],
         });
     },
+
+    async getChartDataV2({type = 'vol', limit = 7} = {}) {
+        const list = await queryData(limit, type);
+        const def = {
+            labels: [],
+            series: [],
+        };
+        if (list && list.length) {
+            return list.reduce((so, cur, index) => {
+                const {date, ave} = cur;
+                so.labels.push(date ? this.handlerDateFormat({date, period: 'day', index, total: list.length}) : '');
+                if (type === 'vol') {
+                    // 处理数据单位为亿
+                    so.series.push(ave ? (ave / 100000000).toFixed(4) : '');
+                }
+                if (type === 'otc') {
+                    so.series.push(ave ? (ave).toFixed(4) : '');
+                }
+                return so;
+            }, def);
+        }
+
+        return def;
+    },
+
     handlerAveData(data, datetime) {
         if (data && data.length) {
             const total = data.reduce((so, cur) => {
@@ -343,9 +367,9 @@ module.exports = volume = {
         }
     },
     async getChart({period, limit, density, date, local}) {
-        let {labels, series} = this.getChartData({period, limit, density, date, full: false});
-        const list = await findData(1, );
-        // const {labels, series} = ;
+        // let {labels, series} = this.getChartData({period, limit, density, date, full: false});
+        let {labels, series} = await this.getChartDataV2({limit, type: 'vol'});
+
         if (!series) {
             return '没有找到相关数据，请检查数据正确性……';
         }
@@ -371,12 +395,17 @@ module.exports = volume = {
     }
 };
 
+checkData.init();
+
+// volume.getChartDataV2();
+
 // volume.getChart({period: 'min', limit: '100', density: 1, date: '', local: 1});
 // volume.getChartData({limit: '120', offset: 1, local: 1});
 
 /* 导入[./data]数据到 mongodb Cloud [https://cloud.mongodb.com/] */
 // (async function () {
-//     const dataPath = otcPath;
+//     const isOtc = 1;
+//     const dataPath = isOtc ? otcPath : volPath;
 //     const dir = fs.readdirSync(dataPath);
 //     const filesList = dir.filter(dirName => {
 //         const dirPath = path.join(dataPath, dirName);
@@ -414,9 +443,9 @@ module.exports = volume = {
 //         const jsonArr = JSON.parse('[' + content + ']');
 //
 //         try {
-//             await findData('key_202009');
-//             // await insertData(jsonArr, name, 'hbOtc');
-//             // await updateDayKline(jsonArr, name, 'hbOtc');
+//             // await findData('key_202009');
+//             // await insertData(jsonArr, name, isOtc ? 'hbOtc' : 'hb');
+//             await updateDayKline(jsonArr, name, isOtc ? 'hbOtc' : 'hb');
 //         } catch (e) {
 //             console.log(9911, e);
 //             errList.push(value);
