@@ -4,7 +4,7 @@ const axios = require('axios');
 const moment = require('moment');
 
 const makeCharts = require('../charts/makeCharts.js');
-const database = require('../plugin/handlerDatabase');
+const {setDbName, insertData, updateDayKline, findData} = require('../plugin/handlerDatabase');
 
 const volPath = path.join(__dirname, 'data');
 if (!fs.existsSync(volPath)) {
@@ -34,30 +34,6 @@ function getDateType(format = 'YYYYMMDD', date) {
     }
 }
 
-let getters = {
-    newDayHour() {
-        return !new Date().getHours();
-    },
-    dayEndHour() {
-        return new Date().getHours() === 23;
-    },
-    newHour() {
-        return !new Date().getMinutes();
-    },
-    newDayMin() {
-        if (this.newDayHour) {
-            return this.newHour();
-        }
-        return false;
-    },
-    dayEndMin() {
-        if (this.dayEndHour()) {
-            return new Date().getMinutes() === 59;
-        }
-        return false;
-    },
-};
-
 let checkData = {
     checkFileDir(_path) {
         try {
@@ -76,14 +52,8 @@ let checkData = {
             return false;
         }
     },
-    async setVolFileDate() {
-        let response = await this.getApiData('vol');
-        const fileName = this.checkFileDir(volPath);
-        if (response && fileName) {
-            let fileData = {
-                time: +new Date(),
-                data: response,
-            };
+    setData2Local(fileData = {}, fileName) {
+        if (fileName) {
             let jsonStr = JSON.stringify(fileData);
             let fileLen = (fs.readFileSync(fileName) || '').toString().length;
             if (fileLen > 2) {
@@ -92,20 +62,27 @@ let checkData = {
             fs.appendFileSync(fileName, jsonStr);
         }
     },
+    async setData2Cloud(doc) {
+        setDbName('test');
+        await insertData(doc);
+        await updateDayKline(doc);
+    },
+    async setVolFileDate() {
+        let data = await this.getApiData('vol');
+        const fileName = this.checkFileDir(volPath);
+        if (data) {
+            const finalData = {time: +new Date(), data};
+            this.setData2Local(finalData, fileName);
+            this.setData2Cloud(finalData);
+        }
+    },
     async setOtcFileDate() {
-        let response = await this.getApiData('otc');
+        let data = await this.getApiData('otc');
         const fileName = this.checkFileDir(otcPath);
-        if (response && fileName) {
-            let fileData = {
-                time: +new Date(),
-                data: response,
-            };
-            let jsonStr = JSON.stringify(fileData);
-            let fileLen = (fs.readFileSync(fileName) || '').toString().length;
-            if (fileLen > 2) {
-                jsonStr = ',' + jsonStr;
-            }
-            fs.appendFileSync(fileName, jsonStr);
+        if (data) {
+            const finalData = {time: +new Date(), data};
+            this.setData2Local(finalData, fileName);
+            this.setData2Cloud(finalData);
         }
     },
     async getApiData(type) {
@@ -148,7 +125,7 @@ let checkData = {
         this.setOtcFileDate();
         setTimeout(() => {
             this.timeEvent()
-        }, 1000 * 5);
+        }, 1000 * 6);
     },
     init() {
         console.info('>Stat< start huobi volume & recorded data!');
@@ -156,7 +133,7 @@ let checkData = {
     },
 };
 
-// checkData.init();
+checkData.init();
 
 module.exports = volume = {
     dataPath: null,
@@ -367,7 +344,7 @@ module.exports = volume = {
     },
     async getChart({period, limit, density, date, local}) {
         let {labels, series} = this.getChartData({period, limit, density, date, full: false});
-        // const list = await findData();
+        const list = await findData(1, );
         // const {labels, series} = ;
         if (!series) {
             return '没有找到相关数据，请检查数据正确性……';
@@ -398,64 +375,61 @@ module.exports = volume = {
 // volume.getChartData({limit: '120', offset: 1, local: 1});
 
 /* 导入[./data]数据到 mongodb Cloud [https://cloud.mongodb.com/] */
-(async function () {
-    const {insertData, updateDayKline, findData} = database;
-    const dataPath = otcPath;
-    const dir = fs.readdirSync(dataPath);
-    const filesList = dir.filter(dirName => {
-        const dirPath = path.join(dataPath, dirName);
-        return fs.statSync(dirPath).isDirectory();
-    }).map(month => {
-        const monthPath = path.join(dataPath, month);
-        const fileList = fs.readdirSync(monthPath);
-        return fileList.map(file => {
-            return {
-                path: path.join(monthPath, file),
-                name: file.split('.')[0]
-            };
-        });
-    });
-
-    function* iteratorFun() {
-        const len = filesList.length;
-        for (let i = 0; i < len; i++) {
-            const item = filesList[i];
-            for (let j = 0; j < item.length; j++) {
-                yield item[j];
-            }
-        }
-    }
-
-    let iterator = iteratorFun();
-    let iteratorItem = iterator.next();
-    let errList = [];
-
-    while (!iteratorItem.done) {
-        const {value} = iteratorItem;
-        const {path, name} = value;
-
-        const content = fs.readFileSync(path);
-        const jsonArr = JSON.parse('[' + content + ']');
-
-        try {
-            // await findData('key_202009');
-            await insertData(jsonArr, name, 'huobi_otc');
-            await updateDayKline(jsonArr, name, 'huobi_otc');
-        } catch (e) {
-            console.log(9911, e);
-            errList.push(value);
-        }
-
-        iteratorItem = iterator.next();
-    }
-
-    console.log(1911, errList);
-})();
+// (async function () {
+//     const dataPath = otcPath;
+//     const dir = fs.readdirSync(dataPath);
+//     const filesList = dir.filter(dirName => {
+//         const dirPath = path.join(dataPath, dirName);
+//         return fs.statSync(dirPath).isDirectory();
+//     }).map(month => {
+//         const monthPath = path.join(dataPath, month);
+//         const fileList = fs.readdirSync(monthPath);
+//         return fileList.map(file => {
+//             return {
+//                 path: path.join(monthPath, file),
+//                 name: file.split('.')[0]
+//             };
+//         });
+//     });
+//
+//     function* iteratorFun() {
+//         const len = filesList.length;
+//         for (let i = 0; i < len; i++) {
+//             const item = filesList[i];
+//             for (let j = 0; j < item.length; j++) {
+//                 yield item[j];
+//             }
+//         }
+//     }
+//
+//     let iterator = iteratorFun();
+//     let iteratorItem = iterator.next();
+//     let errList = [];
+//
+//     while (!iteratorItem.done) {
+//         const {value} = iteratorItem;
+//         const {path, name} = value;
+//
+//         const content = fs.readFileSync(path);
+//         const jsonArr = JSON.parse('[' + content + ']');
+//
+//         try {
+//             await findData('key_202009');
+//             // await insertData(jsonArr, name, 'hbOtc');
+//             // await updateDayKline(jsonArr, name, 'hbOtc');
+//         } catch (e) {
+//             console.log(9911, e);
+//             errList.push(value);
+//         }
+//
+//         iteratorItem = iterator.next();
+//     }
+//
+//     console.log(1911, errList);
+// })();
 
 /* test change dbName */
 // (async function () {
-//     const {setDbName, findData, getCollectName} = database;
-//     setDbName('huobi_otc');
 //     const collectName = getCollectName('key', new Date());
 //     console.log(7112, collectName);
 //     const data = await findData(collectName);

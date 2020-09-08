@@ -5,9 +5,9 @@ const MongoClient = require('mongodb').MongoClient;
 let dbInstance = {};
 
 module.exports = {
-    instance: async (dbName = 'huobi') => {
+    instance: async (dbName = 'huobi', force = false) => {
         const st = +new Date();
-        if (!dbInstance[dbName]) {
+        if (!dbInstance[dbName] || force) {
             console.warn(`##### Start connection [${dbName}] #####`);
             try {
                 // const URL = 'mongodb://localhost:27017/' + dbName;
