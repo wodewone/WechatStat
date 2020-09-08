@@ -92,9 +92,13 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
     }
     
     // svg 转 png
-    const buffer = await svg2png(fs.readFileSync(svgPathName));
-    fs.writeFileSync(pngPathName, buffer);
-    // await makeImage(svgString);
+    try {
+        const buffer = await svg2png(fs.readFileSync(svgPathName) + '', '');
+        fs.writeFileSync(pngPathName, buffer);
+        // await makeImage(svgString);
+    }catch (e) {
+        console.warn('[Warn] svg2png error: ', e);
+    }
 
     if(local){
         return 'success !';
