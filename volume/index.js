@@ -234,7 +234,9 @@ module.exports = volume = {
     },
 
     async getChartDataV2({type = 'vol', limit = 7} = {}) {
+        const timer = +new Date();
         const list = await queryData(limit, type);
+        console.info(`##### Get query Data time: (${(+new Date() - timer) / 1000})sec #####`);
         if (list && list.length) {
             const total = list.length;
             return list.reduce((so, cur, index) => {
