@@ -6,18 +6,6 @@ const rp = require('request-promise');
 
 const nginxPath = '/home/www/wechat/';
 
-// function makeImage(svgString){
-//   return new Promise((resolve, reject)=> {
-//     svg2img(svgString, {format: 'jpg','quality': 75}, (error, buffer) => {
-//       if(buffer){
-//         fs.writeFileSync(filePath + 'chart.jpg', buffer);
-//         return resolve();
-//       }
-//       return reject();
-//     });
-//   });
-// }
-
 /**
  * API 文档 (https://itbilu.com/nodejs/npm/BkCASacpm.html)
  * @param labels    Y轴 坐标系
@@ -93,9 +81,8 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
     
     // svg 转 png
     try {
-        const buffer = await svg2png(fs.readFileSync(svgPathName) + '', '');
+        const buffer = await svg2png(fs.readFileSync(svgPathName));
         fs.writeFileSync(pngPathName, buffer);
-        // await makeImage(svgString);
     }catch (e) {
         console.warn('[Warn] svg2png error: ', e);
     }

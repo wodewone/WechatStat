@@ -127,10 +127,6 @@ let checkData = {
             this.timeEvent()
         }, 1000 * 60);
     },
-    init() {
-        console.info('>Stat< start huobi volume & recorded data!');
-        this.timeEvent();
-    },
 };
 
 
@@ -392,10 +388,12 @@ module.exports = volume = {
         } else {
             return '服务器有问题，请查看……';
         }
-    }
+    },
+    initDataRecord() {
+        console.info('>Stat< start huobi volume & recorded data!');
+        checkData.timeEvent();
+    },
 };
-
-checkData.init();
 
 // volume.getChartDataV2();
 

@@ -12,27 +12,12 @@ const {responseTimeOut} = require('./plugin/utils');
 
 const app = new Koa();
 
-// return (async ()=>{
-//     console.info(responseTimeOut({resp: `${SERVER_URL}/wechat/fear`}, fear.getFearChart({limit: 1000})))
-// })();
+volume.initDataRecord();
 
-/**
- *
- app.use(async (msg, next)=>{
-    console.info('ctx', ctx);
-    @ msg request content
-    {
-        ToUserName: 'gh_102524ec3ee8',
-        FromUserName: 'ojxUquH7zdEzEpepXZ1N1dzUy-34',
-        CreateTime: '1555393610',
-        MsgType: 'text',
-        Content: 'fear',
-        MsgId: '22267881023320195'
-    }
- */
 const getLog = (type) => {
     console.info(`[${type}]================================[${moment().format('YYYY/MM/DD/ HH:mm:ss')}]`);
 };
+
 app.use(wechat(WECHAT_CONFIG).middleware(async (msg, ctx, next) => {
     if (msg.MsgType === 'text') {
         const title = msg.Content || '';
