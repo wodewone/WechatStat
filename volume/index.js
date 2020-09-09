@@ -89,6 +89,7 @@ let checkData = {
         try {
             if (type === 'vol') {
                 const list = [
+                    'www.huobi.fm',
                     'www.huobi.me',
                     'www.huobi.ec',
                     'www.huobi.com.vn',
