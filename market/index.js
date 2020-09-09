@@ -5,9 +5,11 @@ const makeCharts = require('../charts/makeCharts.js');
 
 module.exports = market = {
     async getChart({limit = 7, local}) {
+        const timer = new Date();
         const {series: $vol} = await volume.getChartDataV2({limit});
         const maxLen = $vol.length;
         const {labelDate, labels, series: $fear} = await fear.getFearData(maxLen);
+        console.info(`##### Get market chart time: (${(+new Date() - timer) / 1000})sec #####`);
         // const {series: _vol} = await volume.getChartData({
         //     limit,
         //     offset: moment().diff(moment(labelDate[labelDate.length - 1]), 'd')

@@ -17,13 +17,13 @@ const nginxPath = '/home/www/wechat/';
  * @returns {Promise<*>}
  */
 module.exports = async ({local, labels, series, title = '', subtitle = ''}, {filePath = './', fileName = 'chart'}) => {
+    const timer = +new Date();
     const chartData = {
         title,
         subtitle,
         labels,
         series,
     };
-
     const opts = {
         options: {
             fullWidth: true,
@@ -87,7 +87,10 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
         console.warn('[Warn] svg2png error: ', e);
     }
 
+    console.info(`##### Make Img Time: (${(+new Date() - timer) / 1000})sec #####`);
+
     if(local){
+        console.info(`##### Get Chart Time: (${(+new Date() - timer) / 1000})sec #####`);
         return 'success !';
     }
     // 上传png图到微信临时空间，获得media_id
@@ -107,6 +110,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
             json: true,
         };
         let {media_id, created_at} = await rp(opt);
+        console.info(`##### Get Chart Time: (${(+new Date() - timer) / 1000})sec #####`);
         return media_id;
     } catch (e) {
         console.warn('Warn: Marke image faild: ', e);

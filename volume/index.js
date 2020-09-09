@@ -375,7 +375,6 @@ module.exports = volume = {
         }
         let subtitle = this.getChartSubTitle(period, labels, date);
 
-        const timer = +new Date();
         let mediaId = await makeCharts({
             local,
             labels,
@@ -383,7 +382,6 @@ module.exports = volume = {
             title: 'Huobi Volume(U. 100m/USDT)',
             subtitle
         }, {fileName: 'volume'});
-        console.info(`##### Get Chart time: (${(+new Date() - timer) / 1000})sec #####`);
 
         if (mediaId) {
             return {
