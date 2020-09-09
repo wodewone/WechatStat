@@ -26,4 +26,4 @@ module.exports = otc = {
     }
 };
 
-// otc.getChart({limit: 100, local: 1, period: 'min'});
+// otc.getChart({limit: 300, local: 1, period: 'min'});

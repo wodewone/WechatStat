@@ -5,18 +5,24 @@ const makeCharts = require('../charts/makeCharts.js');
 
 module.exports = market = {
     async getChart({limit = 7, local}) {
-        const {labelDate, labels, series: _fear} = await fear.getFearData(limit);
-        const {series: _vol} = await volume.getChartData({
-            limit,
-            offset: moment().diff(moment(labelDate[labelDate.length - 1]), 'd')
-        });
+        const {series: $vol} = await volume.getChartDataV2({limit});
+        const maxLen = $vol.length;
+        const {labelDate, labels, series: $fear} = await fear.getFearData(maxLen);
+        // const {series: _vol} = await volume.getChartData({
+        //     limit,
+        //     offset: moment().diff(moment(labelDate[labelDate.length - 1]), 'd')
+        // });
+
         let mediaId = await makeCharts({
             local,
             labels,
-            series: [[], _vol, _fear],
+            series: [[], $vol, $fear],
             title: 'Fear.Greed & Exchange volume',
-            subtitle: 'orange = fear.greed. red = volume.',
+            subtitle: `orange = fear.greed. red = volume. ${maxLen < limit ? 'volume max length ' + maxLen : ''} `,
         }, {fileName: 'market'});
+
+        local && console.warn('[Warn] Market chart success!');
+
         if (mediaId) {
             return {
                 type: "image",
@@ -27,4 +33,4 @@ module.exports = market = {
     }
 };
 
-// market.getChart({limit: 30, local: 1});
+// market.getChart({limit: 100, local: 1});

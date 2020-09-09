@@ -248,7 +248,7 @@ module.exports = database = {
         const startDate = date2number(moment().dayOfYear(today - range - 1));
         const collectName = getCollectName('set');
 
-        return findData(collectName, {date: {$gt: startDate}}, {projection: {"ave": 1, "date": 1, "_id": 0}});
+        return findData(collectName, {date: {$gt: startDate}}, {projection: {"_id": 0}});
     },
 };
 

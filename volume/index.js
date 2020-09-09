@@ -48,7 +48,7 @@ let checkData = {
             }
             return file;
         } catch (e) {
-            console.warn(`checkFileDir = ${_path}: `, e);
+            console.error(`checkFileDir = ${_path}: `);
             return false;
         }
     },
@@ -117,7 +117,7 @@ let checkData = {
                 }
             }
         } catch (e) {
-            console.warn('>>>>>>>>>>>>>>> Get Api data error!', e);
+            console.error('>>>>>>>>>>>>>>> Get Api data error!');
         }
     },
     timeEvent() {
@@ -235,26 +235,27 @@ module.exports = volume = {
 
     async getChartDataV2({type = 'vol', limit = 7} = {}) {
         const list = await queryData(limit, type);
-        const def = {
-            labels: [],
-            series: [],
-        };
         if (list && list.length) {
+            const total = list.length;
             return list.reduce((so, cur, index) => {
                 const {date, ave} = cur;
-                so.labels.push(date ? this.handlerDateFormat({date, period: 'day', index, total: list.length}) : '');
+                const time = date + '';
+                so.labels.push(this.handlerDateFormat({time, index, total}));
                 if (type === 'vol') {
                     // 处理数据单位为亿
-                    so.series.push(ave ? (ave / 100000000).toFixed(4) : '');
+                    const num = (ave || 0).toFixed(0);
+                    so.series.push((num / 1000000000).toFixed(4));
                 }
                 if (type === 'otc') {
                     so.series.push(ave ? (ave).toFixed(4) : '');
                 }
                 return so;
-            }, def);
+            }, {
+                labels: [],
+                series: [],
+            });
         }
-
-        return def;
+        return {};
     },
 
     handlerAveData(data, datetime) {
@@ -370,6 +371,8 @@ module.exports = volume = {
             return '没有找到相关数据，请检查数据正确性……';
         }
         let subtitle = this.getChartSubTitle(period, labels, date);
+
+        const timer = +new Date();
         let mediaId = await makeCharts({
             local,
             labels,
@@ -377,7 +380,8 @@ module.exports = volume = {
             title: 'Huobi Volume(U. 100m/USDT)',
             subtitle
         }, {fileName: 'volume'});
-        // console.info('Make volume media ID:', mediaId);
+        console.info(`##### Get Chart time: (${(+new Date() - timer) / 1000})sec #####`);
+
         if (mediaId) {
             return {
                 type: "image",
@@ -397,7 +401,7 @@ module.exports = volume = {
 
 // volume.getChartDataV2();
 
-// volume.getChart({period: 'min', limit: '100', density: 1, date: '', local: 1});
+// volume.getChart({period: 'days', limit: 100, density: 1, date: '', local: 1});
 // volume.getChartData({limit: '120', offset: 1, local: 1});
 
 /* 导入[./data]数据到 mongodb Cloud [https://cloud.mongodb.com/] */

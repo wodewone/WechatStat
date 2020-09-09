@@ -56,7 +56,7 @@ module.exports = fear = {
                     series: [series],
                     title: 'Crypto Fear & Greed Index'
                 }, {fileName: 'fear'});
-                // console.info('Make fear media ID:', mediaId);
+
                 if (mediaId) {
                     return {
                         type: "image",
