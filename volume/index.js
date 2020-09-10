@@ -395,7 +395,7 @@ module.exports = volume = {
         }
     },
     initDataRecord() {
-        console.info('>Stat< start huobi volume & recorded data!');
+        console.info(`[${moment().format()}] >Stat< start huobi volume & recorded data!`);
         checkData.timeEvent();
     },
 };

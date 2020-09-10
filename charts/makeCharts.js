@@ -4,7 +4,19 @@ const svg2png = require('svg2png');
 const chartistSvg = require('svg-chartist');
 const rp = require('request-promise');
 
-const nginxPath = '/home/www/wechat/';
+const timerObj = {};
+const logTimer = (index, complete = true) => {
+    const time = +new Date();
+    if (timerObj[index]) {
+        const down = timerObj[index];
+        if (complete) {
+            delete timerObj[index];
+        }
+        return `${index} | ` + (time - down) / 1000 + 'sec';
+    } else {
+        timerObj[index] = time;
+    }
+};
 
 /**
  * API 文档 (https://itbilu.com/nodejs/npm/BkCASacpm.html)
@@ -17,7 +29,9 @@ const nginxPath = '/home/www/wechat/';
  * @returns {Promise<*>}
  */
 module.exports = async ({local, labels, series, title = '', subtitle = ''}, {filePath = './', fileName = 'chart'}) => {
-    const timer = +new Date();
+    console.info(`##### [BEGIN] Record Chart Time #####`);
+    logTimer(1);
+    const nginxPath = local ? '/chartsImg/backup' : '/home/www/wechat/';
     const chartData = {
         title,
         subtitle,
@@ -87,14 +101,14 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
         console.warn('[Warn] svg2png error: ', e);
     }
 
-    console.info(`##### Make Img Time: (${(+new Date() - timer) / 1000})sec #####`);
+    console.info(`##### Get make Img Time: (${logTimer(1)}) #####`);
 
     if(local){
-        console.info(`##### Get Chart Time: (${(+new Date() - timer) / 1000})sec #####`);
         return 'success !';
     }
     // 上传png图到微信临时空间，获得media_id
     try {
+        logTimer(2);
         const form = {
             smfile: fs.createReadStream(pngPathName),
         };
@@ -110,7 +124,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
             json: true,
         };
         let {media_id, created_at} = await rp(opt);
-        console.info(`##### Get Chart Time: (${(+new Date() - timer) / 1000})sec #####`);
+        console.info(`##### [END] Chart Total Time: (${logTimer(2)}) #####`);
         return media_id;
     } catch (e) {
         console.warn('Warn: Marke image faild: ', e);

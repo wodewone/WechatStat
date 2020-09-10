@@ -9,7 +9,6 @@ module.exports = market = {
         const {series: $vol} = await volume.getChartDataV2({limit});
         const maxLen = $vol.length;
         const {labelDate, labels, series: $fear} = await fear.getFearData(maxLen);
-        console.info(`##### Get market chart time: (${(+new Date() - timer) / 1000})sec #####`);
         // const {series: _vol} = await volume.getChartData({
         //     limit,
         //     offset: moment().diff(moment(labelDate[labelDate.length - 1]), 'd')
@@ -23,6 +22,7 @@ module.exports = market = {
             subtitle: `orange = fear.greed. red = volume. ${maxLen < limit ? 'volume max length ' + maxLen : ''} `,
         }, {fileName: 'market'});
 
+        console.info(`##### [Timer] Market chart time: (${(+new Date() - timer) / 1000})sec #####`);
         local && console.warn('[Warn] Market chart success!');
 
         if (mediaId) {
@@ -34,5 +34,6 @@ module.exports = market = {
         return '…………';
     }
 };
+
 
 // market.getChart({limit: 100, local: 1});

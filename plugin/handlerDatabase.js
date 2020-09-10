@@ -209,10 +209,8 @@ module.exports = database = {
         const collection = await getCollection(tableName);
         try {
             if (Array.isArray(document)) {
-                console.info('[Info] Ready insert data in: [', dbName, '] for [', tableName, '] And data list: ', document.length);
                 return collection.insertMany(document);
             } else {
-                console.info('[Info] Ready insert data to: [', dbName, '] for [', tableName, '] And data: ', document);
                 return collection.insertOne(document);
             }
         } catch (e) {

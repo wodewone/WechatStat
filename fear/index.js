@@ -32,6 +32,7 @@ module.exports = fear = {
      * @returns {Promise<*>}
      */
     async getFearData(limit = 1) {
+        const timer = new Date();
         let {data: {data}} = await axios.get(`https://api.alternative.me/fng/?limit=${limit}`);
         let labelDate = [];
         let labels = [];
@@ -43,6 +44,7 @@ module.exports = fear = {
                 series.push(item.value);
             });
         }
+        console.info(`##### Get fear data time: (${(+new Date() - timer) / 1000})sec #####`);
         return {labels, series, labelDate};
     },
     async getFearChart({limit}) {
