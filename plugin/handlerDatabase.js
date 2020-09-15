@@ -57,7 +57,7 @@ module.exports = database = {
         }
     },
 
-    getCollectName(key, date) {
+    getCollectName(key, date = new Date()) {
         const collectionName = {
             key: {
                 prefix: 'key_',
@@ -72,11 +72,11 @@ module.exports = database = {
         if (!item) {
             return key;
         }
-        if (!moment(date).isValid()) {
-            return null;
-        }
         const {prefix, dateFormat} = item;
         if (dateFormat) {
+            if (!moment(date).isValid()) {
+                return '';
+            }
             return prefix + moment(date).format(dateFormat);
         } else {
             return prefix;
@@ -166,13 +166,7 @@ module.exports = database = {
 
         dbName && setDbName(dbName);
 
-        const collectName = getCollectName('set', dateline);
-        if (!collectName) {
-            return {
-                error: '找不到对应数据'
-            }
-        }
-
+        const collectName = getCollectName('set');
         const setData = await getMarketsValue(doc, {collectName, dateline});
         const date = date2number(dateline);
         await updateData({date}, setData, {dbName, collectName});
@@ -284,6 +278,46 @@ module.exports = database = {
 // ss.map(i => {
 //     database.updateDayKline({}, i).then(r => {});
 // });
+
+// (async function () {
+//     const {getCollectName, findData, getDayKline, updateData} = database;
+//
+//     const collectName = getCollectName('kline_2020');
+//     const dataList = await findData(collectName, {}, {projection: {"_id": 0}});
+//     const filesList = dataList && dataList.length ? dataList.splice(-2) : [];
+//
+//     function* iteratorFun() {
+//         const len = filesList.length;
+//         for (let i = 0; i < len; i++) {
+//             const item = filesList[i];
+//             for (let j = 0; j < item.length; j++) {
+//                 yield item[j];
+//             }
+//         }
+//     }
+//
+//     let iterator = iteratorFun();
+//     let iteratorItem = iterator.next();
+//     let errList = [];
+//
+//     const isOtc = 0;
+//
+//     while (!iteratorItem.done) {
+//         const {value} = iteratorItem;
+//         const {date} = value;
+//
+//         try {
+//             const klineList = await getDayKline(date);
+//             await updateData({date}, {list}, {dbName, collectName});
+//         } catch (e) {
+//             console.log(9911, e);
+//             errList.push(value);
+//         }
+//         iteratorItem = iterator.next();
+//     }
+//
+//     console.info(`Execute Success and err list: `, errList);
+// })();
 
 /* DEMO */
 // {

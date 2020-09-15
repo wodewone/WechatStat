@@ -48,7 +48,7 @@ let checkData = {
             }
             return file;
         } catch (e) {
-            console.error(`checkFileDir = ${_path}: `);
+            console.error(`[${moment().format()}] CheckFileDir = ${_path}: `);
             return false;
         }
     },
@@ -89,18 +89,26 @@ let checkData = {
         try {
             if (type === 'vol') {
                 const list = [
-                    'www.huobi.fm',
                     'www.huobi.me',
                     'www.huobi.ec',
                     'www.huobi.com.vn',
                     'www.huobi.com.gi',
                     'www.huobi.uk.com',
-                    'www.huobi.li',
                     'www.huobi.com.bi',
+                    'www.huobi.ws',
+                    'www.huobi.fm',
+                    'www.huobi.mn',
+                    'www.huobi.ec',
+                    'www.huobi.li',
                     'www.huobi.ci',
                     'www.huobi.gf',
                     'www.huobi.as',
                     'www.huobi.pr',
+                    'www.huobi.sc',
+                    'www.huobi.be',
+                    'www.huobi.it',
+                    'www.huobi.cz',
+                    'www.huobi.sh',
                 ].map(url => axios.get(`https://${url}/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`));
                 const {data: {data}} = await Promise.race(list);
                 return data || null;
@@ -118,7 +126,7 @@ let checkData = {
                 }
             }
         } catch (e) {
-            console.error('>>>>>>>>>>>>>>> Get Api data error!');
+            console.error(`[${moment().format()}] Get Api data error!`);
         }
     },
     timeEvent() {
