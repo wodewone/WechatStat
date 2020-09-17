@@ -227,6 +227,9 @@ module.exports = database = {
     },
 
     async queryData(range = 7, type = 'vol') {
+        if (!range || +range <= 0) {
+            return [];
+        }
         const {findData, getCollectName, setDbName} = database;
         const {date2number} = utils;
 
@@ -237,7 +240,7 @@ module.exports = database = {
         setDbName(dbName[type]);
 
         const today = moment().dayOfYear();
-        const startDate = date2number(moment().dayOfYear(today - range - 1));
+        const startDate = date2number(moment().dayOfYear(today - range));
         const collectName = getCollectName('set');
 
         return findData(collectName, {date: {$gt: startDate}}, {projection: {"_id": 0}});

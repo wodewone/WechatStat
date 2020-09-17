@@ -3,8 +3,9 @@ const path = require('path');
 const axios = require('axios');
 const moment = require('moment');
 
+const {HBVOLURL, HBOTCURL} = require('../config');
 const makeCharts = require('../charts/makeCharts.js');
-const {setDbName, insertData, updateDayKline, queryData} = require('../plugin/handlerDatabase');
+const {setDbName, insertData, updateDayKline, queryData} = require('../../plugin/handlerDatabase');
 
 const volPath = path.join(__dirname, 'data');
 if (!fs.existsSync(volPath)) {
@@ -48,7 +49,7 @@ let checkData = {
             }
             return file;
         } catch (e) {
-            console.error(`[${moment().format()}] CheckFileDir = ${_path}: `);
+            console.error(`[${process.datetime()}] CheckFileDir = ${_path}: `);
             return false;
         }
     },
@@ -68,65 +69,56 @@ let checkData = {
         await updateDayKline(doc);
     },
     async setVolFileDate() {
-        let data = await this.getApiData('vol');
+        let data = await this.getVolData('vol');
         const fileName = this.checkFileDir(volPath);
         if (data) {
             const finalData = {time: +new Date(), data};
             this.setData2Local(finalData, fileName);
-            this.setData2Cloud(finalData, 'hb');
+            // this.setData2Cloud(finalData, 'hb');
         }
     },
     async setOtcFileDate() {
-        let data = await this.getApiData('otc');
+        let data = await this.getOtcData('otc');
         const fileName = this.checkFileDir(otcPath);
         if (data) {
             const finalData = {time: +new Date(), data};
             this.setData2Local(finalData, fileName);
-            this.setData2Cloud(finalData, 'hbOtc');
+            // this.setData2Cloud(finalData, 'hbOtc');
         }
     },
-    async getApiData(type) {
+    async getVolData(force) {
         try {
-            if (type === 'vol') {
-                const list = [
-                    'www.huobi.me',
-                    'www.huobi.ec',
-                    'www.huobi.com.vn',
-                    'www.huobi.com.gi',
-                    'www.huobi.uk.com',
-                    'www.huobi.com.bi',
-                    'www.huobi.ws',
-                    'www.huobi.fm',
-                    'www.huobi.mn',
-                    'www.huobi.ec',
-                    'www.huobi.li',
-                    'www.huobi.ci',
-                    'www.huobi.gf',
-                    'www.huobi.as',
-                    'www.huobi.pr',
-                    'www.huobi.sc',
-                    'www.huobi.be',
-                    'www.huobi.it',
-                    'www.huobi.cz',
-                    'www.huobi.sh',
-                ].map(url => axios.get(`https://${url}/-/x/pro/v1/hbg/get/volume?v=${Math.random()}`));
-                const {data: {data}} = await Promise.race(list);
-                return data || null;
-            } else if (type === 'otc') {
-                const list = [
-                    'otc-api-hk.eiijo.cn',
-                    'otc-api.eiijo.cn',
-                ].map(url => axios.get(`https://${url}/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general&v=${Math.random()}`));
-                const {data: {data}} = await Promise.race(list);
-                if (data && data.length) {
-                    const {price} = data[0] || {};
-                    if (price) {
-                        return price
-                    }
+            const list = HBVOLURL.map(url => axios.get(`https://${url}/-/x/pro/v1/hbg/get/volume`));
+            const {data: {data}} = await Promise.race(list).catch((e) => {
+                if (!force) {
+                    console.error(`[${process.datetime()}] [API ERROR] [vol]`);
+                    return this.getVolData(1);
+                }
+            });
+            if (data) {
+                return data;
+            }
+        } catch (e) {
+            console.error(`[${process.datetime()}] [API ERROR] [VOL]`);
+        }
+    },
+    async getOtcData(force) {
+        try {
+            const list = HBOTCURL.map(url => axios.get(`https://${url}/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general`));
+            const {data: {data}} = await Promise.race(list).catch((e) => {
+                if (!force){
+                    console.error(`[${process.datetime()}] [API ERROR] [otc]`);
+                    return this.getVolData(1);
+                }
+            });
+            if (data && data.length) {
+                const {price} = data[0] || {};
+                if (price) {
+                    return price
                 }
             }
         } catch (e) {
-            console.error(`[${moment().format()}] Get Api data error!`);
+            console.error(`[${process.datetime()}] [API ERROR] [OTC]`);
         }
     },
     timeEvent() {
@@ -294,17 +286,6 @@ module.exports = volume = {
         }
         return [];
     },
-    getDataHours({dirName, limit, date}) {
-        const fileName = path.join(dirName, `${getDateType('YYYYMMDD', date)}.json`);
-        if (fs.existsSync(dirName) && fs.existsSync(fileName)) {
-            const _data = (this.handlerFileData(fs.readFileSync(fileName)) || []);
-            if (limit && limit > 1) {
-                return _data.slice(-limit)
-            }
-            return _data;
-        }
-        return [];
-    },
     getDataDays({dirName, limit, offset, full, period}) {
         const filePeriod = {
             week: 7,
@@ -403,7 +384,7 @@ module.exports = volume = {
         }
     },
     initDataRecord() {
-        console.info(`[${moment().format()}] >Stat< start huobi volume & recorded data!`);
+        console.info(`[${process.datetime()}] >Stat< start huobi volume & recorded data!`);
         checkData.timeEvent();
     },
 };
@@ -413,7 +394,7 @@ module.exports = volume = {
 // volume.getChart({period: 'days', limit: 100, density: 1, date: '', local: 1});
 // volume.getChartData({limit: '120', offset: 1, local: 1});
 
-/* 导入[./data]数据到 mongodb Cloud [https://cloud.mongodb.com/] */
+/* 导入[/data]数据到 mongodb Cloud [https://cloud.mongodb.com/] */
 // (async function () {
 //     const isOtc = 1;
 //     const dataPath = isOtc ? otcPath : volPath;

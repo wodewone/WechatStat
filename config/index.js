@@ -1,11 +1,8 @@
-const config = {
-    SERVER_DOMAIN: '118.24.53.67',
-    SERVER_DOMAIN_PORT: 8090,
-
-    PRO_PORT: 8088,
+const server = {
+    PORT: 8088,
 };
 
-const WECHAT_CONFIG = {
+const wechatConfig = {
     token: 'wodewone',
     appid: 'wx4c2452c3b5b8f406',
     encodingAESKey: 'LLETB4SMUikbSU25uGsVwizb6AGmio4tCVS1BsgUM7D',
@@ -13,7 +10,6 @@ const WECHAT_CONFIG = {
 };
 
 module.exports = {
-    WECHAT_CONFIG,
-    SERVER_URL: `http://${config.SERVER_DOMAIN}:${config.SERVER_DOMAIN_PORT}`,
-    ...config,
+    wechatConfig,
+    server,
 };

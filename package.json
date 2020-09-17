@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "dev": "DEV=1 node app.js",
     "pm2": "pm2 startOrRestart ecosystem.config.js"
   },
   "author": "",
@@ -14,12 +15,14 @@
     "decimal.js": "^10.2.0",
     "guard_dog": "^3.1.4",
     "koa": "^2.7.0",
-    "koa-router": "^7.4.0",
     "moment": "^2.24.0",
     "mongodb": "^3.6.0",
     "request-promise": "^4.2.4",
     "svg-chartist": "^1.0.1",
     "svg2img": "^0.6.0",
     "svg2png": "^4.1.1"
+  },
+  "devDependencies": {
+    "koa-router": "^7.4.0"
   }
 }
