@@ -10,5 +10,5 @@ node_modules/
 .dog
 *.dog
 chartsImg
-volume/data/*
-volume/otc/*
+/server/volume/data/*
+/server/volume/otc/*

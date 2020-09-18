@@ -1,5 +1,5 @@
 const Router = require('koa-router');
-const {queryData} = require('../plugin/handlerDatabase');
+const {queryData} = require('../plugin/database');
 
 const router = new Router({
     prefix: '/v1'

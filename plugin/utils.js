@@ -7,4 +7,13 @@ module.exports = {
             ...event,
         ])
     },
+    getNetworkInfo() {
+
+    },
+    getIpv4() {
+        const os = require('os');
+        const networks = os.networkInterfaces();
+        return [].concat(...Object.values(networks)).find(({family, address, internal}) => family === 'IPv4' && address !== '127.0.0.1' && !internal) || {};
+    },
 };
+

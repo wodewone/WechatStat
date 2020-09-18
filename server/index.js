@@ -15,9 +15,7 @@ const getLog = (type) => {
     console.info(`[${type}] [${process.datetime()}]`);
 };
 
-if (!process.env.DEV) {
-    volume.initDataRecord();
-}
+volume.initDataRecord();
 
 module.exports = {
     wechat: wechat(wechatConfig).middleware(async (msg, ctx, next) => {

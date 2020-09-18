@@ -6,6 +6,12 @@ const moment = require('moment');
 let dbInstance = {};
 
 module.exports = {
+    /**
+     * 获得数据库连接
+     * @param dbName
+     * @param force
+     * @returns {Promise<boolean|*>}
+     */
     instance: async (dbName = 'huobi', force = false) => {
         const st = +new Date();
         if (!dbInstance[dbName] || force) {

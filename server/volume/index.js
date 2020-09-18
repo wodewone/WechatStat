@@ -5,7 +5,7 @@ const moment = require('moment');
 
 const {HBVOLURL, HBOTCURL} = require('../config');
 const makeCharts = require('../charts/makeCharts.js');
-const {setDbName, insertData, updateDayKline, queryData} = require('../../plugin/handlerDatabase');
+const Database = require('../../plugin/database');
 
 const volPath = path.join(__dirname, 'data');
 if (!fs.existsSync(volPath)) {
@@ -16,6 +16,11 @@ const otcPath = path.join(__dirname, 'otc');
 if (!fs.existsSync(otcPath)) {
     fs.mkdirSync(otcPath);
 }
+
+const dbVol = new Database({db: 'hb'});
+const dbOtc = new Database({db: 'hbOtc'});
+
+console.info(232, dbVol);
 
 /**
  * get date
@@ -63,27 +68,22 @@ let checkData = {
             fs.appendFileSync(fileName, jsonStr);
         }
     },
-    async setData2Cloud(doc, db) {
-        setDbName(db);
-        await insertData(doc);
-        await updateDayKline(doc);
-    },
     async setVolFileDate() {
         let data = await this.getVolData('vol');
-        const fileName = this.checkFileDir(volPath);
         if (data) {
-            const finalData = {time: +new Date(), data};
-            this.setData2Local(finalData, fileName);
-            // this.setData2Cloud(finalData, 'hb');
+            const doc = {time: +new Date(), data};
+            // const fileName = this.checkFileDir(volPath);
+            // this.setData2Local(doc, fileName);
+            await dbVol.addDoc2Cloud(doc);
         }
     },
     async setOtcFileDate() {
         let data = await this.getOtcData('otc');
-        const fileName = this.checkFileDir(otcPath);
         if (data) {
-            const finalData = {time: +new Date(), data};
-            this.setData2Local(finalData, fileName);
-            // this.setData2Cloud(finalData, 'hbOtc');
+            const doc = {time: +new Date(), data};
+            // const fileName = this.checkFileDir(otcPath);
+            // this.setData2Local(doc, fileName);
+            await dbOtc.addDoc2Cloud(doc);
         }
     },
     async getVolData(force) {
@@ -108,7 +108,7 @@ let checkData = {
             const {data: {data}} = await Promise.race(list).catch((e) => {
                 if (!force){
                     console.error(`[${process.datetime()}] [API ERROR] [otc]`);
-                    return this.getVolData(1);
+                    return this.getOtcData(1);
                 }
             });
             if (data && data.length) {
@@ -122,8 +122,8 @@ let checkData = {
         }
     },
     timeEvent() {
-        this.setVolFileDate();
-        this.setOtcFileDate();
+        this.setVolFileDate().catch(e => e);
+        this.setOtcFileDate().catch(e => e);
         setTimeout(() => {
             this.timeEvent()
         }, 1000 * 60);
@@ -234,9 +234,17 @@ module.exports = volume = {
         });
     },
 
+    getDbType(type) {
+        if (type === 'vol') {
+            return dbVol
+        } else {
+            return dbOtc;
+        }
+    },
+
     async getChartDataV2({type = 'vol', limit = 7} = {}) {
         const timer = +new Date();
-        const list = await queryData(limit, type);
+        const list = await this.getDbType(type).queryData(limit);
         console.info(`##### Get query Data time: (${(+new Date() - timer) / 1000})sec #####`);
         if (list && list.length) {
             const total = list.length;
@@ -388,71 +396,3 @@ module.exports = volume = {
         checkData.timeEvent();
     },
 };
-
-// volume.getChartDataV2();
-
-// volume.getChart({period: 'days', limit: 100, density: 1, date: '', local: 1});
-// volume.getChartData({limit: '120', offset: 1, local: 1});
-
-/* 导入[/data]数据到 mongodb Cloud [https://cloud.mongodb.com/] */
-// (async function () {
-//     const isOtc = 1;
-//     const dataPath = isOtc ? otcPath : volPath;
-//     const dir = fs.readdirSync(dataPath);
-//     const filesList = dir.filter(dirName => {
-//         const dirPath = path.join(dataPath, dirName);
-//         return fs.statSync(dirPath).isDirectory();
-//     }).map(month => {
-//         const monthPath = path.join(dataPath, month);
-//         const fileList = fs.readdirSync(monthPath);
-//         return fileList.map(file => {
-//             return {
-//                 path: path.join(monthPath, file),
-//                 name: file.split('.')[0]
-//             };
-//         });
-//     });
-//
-//     function* iteratorFun() {
-//         const len = filesList.length;
-//         for (let i = 0; i < len; i++) {
-//             const item = filesList[i];
-//             for (let j = 0; j < item.length; j++) {
-//                 yield item[j];
-//             }
-//         }
-//     }
-//
-//     let iterator = iteratorFun();
-//     let iteratorItem = iterator.next();
-//     let errList = [];
-//
-//     while (!iteratorItem.done) {
-//         const {value} = iteratorItem;
-//         const {path, name} = value;
-//
-//         const content = fs.readFileSync(path);
-//         const jsonArr = JSON.parse('[' + content + ']');
-//
-//         try {
-//             // await findData('key_202009');
-//             // await insertData(jsonArr, name, isOtc ? 'hbOtc' : 'hb');
-//             await updateDayKline(jsonArr, name, isOtc ? 'hbOtc' : 'hb');
-//         } catch (e) {
-//             console.log(9911, e);
-//             errList.push(value);
-//         }
-//
-//         iteratorItem = iterator.next();
-//     }
-//
-//     console.log(1911, errList);
-// })();
-
-/* test change dbName */
-// (async function () {
-//     const collectName = getCollectName('key', new Date());
-//     console.log(7112, collectName);
-//     const data = await findData(collectName);
-//     console.log(1711, data);
-// })();
