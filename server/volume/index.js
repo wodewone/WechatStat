@@ -4,7 +4,7 @@ const axios = require('axios');
 const moment = require('moment');
 
 const {HBVOLURL, HBOTCURL} = require('../config');
-const makeCharts = require('../charts/makeCharts.js');
+const makeCharts = require('../charts/makeCharts');
 const Database = require('../../plugin/database');
 
 const volPath = path.join(__dirname, 'data');

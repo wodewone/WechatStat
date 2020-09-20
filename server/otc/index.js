@@ -1,5 +1,5 @@
 const volume = require("../volume");
-const makeCharts = require('../charts/makeCharts.js');
+const makeCharts = require('../charts/makeCharts');
 
 module.exports = otc = {
     async getChart({period, limit, density, local}) {

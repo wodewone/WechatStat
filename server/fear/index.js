@@ -1,7 +1,7 @@
 const axios = require('axios');
 const moment = require('moment');
 
-const makeCharts = require('../charts/makeCharts.js');
+const makeCharts = require('../charts/makeCharts');
 
 module.exports = fear = {
     handlerDateFormat(time, index, total) {
