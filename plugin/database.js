@@ -19,10 +19,10 @@ module.exports = class Database {
         amendDateTime(date = '2001-01-01') {
             return new Date(`${date} 00:00:00`);
         },
-        getNextDateTime(datetime = new Date()) {
+        getNextDateTime(datetime = +new Date()) {
             return moment(datetime).add(1, 'days');
         },
-        time2date(datetime = new Date(), format = 'YYYY-MM-DD') {
+        time2date(datetime = +new Date(), format = 'YYYY-MM-DD') {
             return moment(datetime).format(format);
         },
         getAveraging(array = []) {
@@ -32,7 +32,7 @@ module.exports = class Database {
             const ave = Decimal.div(total, array.length);
             return ave * 1 ? ave * 1 : 0;
         },
-        date2number(datetime = new Date(), format = 'YYYYMMDD') {
+        date2number(datetime = +new Date(), format = 'YYYYMMDD') {
             return moment(datetime).format(format) * 1;
         }
     };
@@ -49,7 +49,9 @@ module.exports = class Database {
         return key;
     }
 
-    static getCollectName(key, date = new Date()) {
+    static getCollectName(key, _date) {
+
+        const {time2date} = Database.utils;
         const collectionName = {
             "key": {
                 prefix: 'key_',
@@ -66,29 +68,19 @@ module.exports = class Database {
         }
         const {prefix, dateFormat} = option;
         if (dateFormat) {
-            if (!moment(date).isValid()) {
-                return '';
-            }
-            return prefix + moment(date).format(dateFormat);
+            return prefix + time2date(_date, dateFormat);
         } else {
             return prefix;
         }
     }
 
-    // async findData(collectName, query, options) {
-    //     const collection = await database.getCollection(collectName);
-    //     return collection.find(query, options).toArray();
-    // }
-
-    static async getDayKline(collection, dateline) {
+    static async getDayKline(collection, _date) {
         const {amendDateTime, getNextDateTime, time2date} = Database.utils;
 
-        const q1 = +amendDateTime(time2date(dateline));
-        const q2 = +amendDateTime(time2date(getNextDateTime(dateline)));
+        const q1 = +amendDateTime(time2date(_date));
+        const q2 = +amendDateTime(time2date(getNextDateTime(_date)));
 
-        const  dd = await collection.find({time: {$gt: q1, $lt: q2}}, {projection: {"data": 1, "_id": 0}});
-        console.info(111, dd);
-        return dd;
+        return collection.find({time: {$gt: q1, $lt: q2}}, {projection: {"data": 1, "_id": 0}}).toArray();
     }
 
     static async handlerMarketList(datalist = []) {
@@ -108,8 +100,7 @@ module.exports = class Database {
     }
 
     static async handlerMarketValue(collection, value = 0, dateline) {
-        const {utils} = this;
-        const {date2number} = utils;
+        const {date2number} = Database.utils;
         const date = date2number(dateline);
         const [dateKline] = await collection.find({date}, {
             projection: {
@@ -119,7 +110,7 @@ module.exports = class Database {
                 "high": 1,
                 "low": 1,
             }
-        });
+        }).toArray();
 
         if (dateKline) {
             const {close, low, high} = dateKline;
@@ -139,7 +130,13 @@ module.exports = class Database {
         }
     }
 
-    async getMarketsValue(doc = {} || [], dateline) {
+    /**
+     * 计算行情数据
+     * @param doc
+     * @param _date
+     * @returns {Promise<{[p: string]: *}>}
+     */
+    async getMarketsValue(doc = {} || [], _date) {
         const {getDayKline, handlerMarketValue, handlerMarketList, getCollectName, utils} = Database;
         const {getAveraging} = utils;
 
@@ -149,22 +146,26 @@ module.exports = class Database {
             if (Array.isArray(doc)) {
                 return doc;
             } else {
-                const collection = await this.getCollection(getCollectName('key', dateline));
-                console.info(981, getDayKline);
-                return getDayKline(collection, dateline);
+                const collection = await this.getCollection(getCollectName('key', _date));
+                return getDayKline(collection, _date);
             }
         };
         const dayKline = await getKline();
 
-        // console.info(8811, dayKline);
-
         const ave = getAveraging(dayKline) || defaultValue;
 
-        const market = Array.isArray(doc) ? await handlerMarketList(doc) : await handlerMarketValue(await this.getCollection(getCollectName('set')), defaultValue, dateline);
+        const market = Array.isArray(doc) ? await handlerMarketList(doc) : await handlerMarketValue(await this.getCollection(getCollectName('set')), defaultValue, _date);
 
         return {...market, ave};
     }
 
+    /**
+     * 更新指定集合数据
+     * @param query
+     * @param data
+     * @param collectName
+     * @returns {Promise<boolean>}
+     */
     async updateData(query, data, collectName) {
         if (!query || !data || !collectName) {
             return false
@@ -202,8 +203,8 @@ module.exports = class Database {
      * @param dateline
      * @returns {Promise<boolean|undefined>}
      */
-    async updateDayKline(doc, dateline = new Date()) {
-        const {getCollectName, utils, updateData} = Database;
+    async updateDayKline(doc, dateline = +new Date()) {
+        const {getCollectName, utils} = Database;
         const {date2number} = utils;
 
         const setData = await this.getMarketsValue(doc, dateline);
@@ -211,19 +212,19 @@ module.exports = class Database {
         const date = date2number(dateline);
 
         if (!process.env.DEV) {
-            return updateData({date}, setData, collectName);
+            return this.updateData({date}, setData, collectName);
         } else {
-            console.info(`[updateDayKline] [collectName: ${collectName}] :`, date, setData);
+            console.info(`[updateDayKline] [db: ${this.dbName}] [collectName: ${collectName}] :`, date, setData);
         }
     }
 
     /**
      * 插入数据（可以是数组或对象；默认当前时间）
-     * @param document  [Object...] | Object (Object = {time: 0, data: 0})
-     * @param date      date | datetime | timestamp
+     * @param document      [Object...] | Object (Object = {time: 0, data: 0})
+     * @param date          date | datetime | timestamp
      * @returns {Promise<void>}
      */
-    async insertData(document, date = new Date()) {
+    async insertData(document, date = +new Date()) {
         if (!document) {
             throw `[Warn] insert data error for document type is ${Object.prototype.toString.call(document)}`;
         }
@@ -238,7 +239,7 @@ module.exports = class Database {
                     return collection.insertOne(document);
                 }
             } else {
-                console.info(`[insertData] [collectName: ${collectName}]: `, date, document);
+                console.info(`[insertData] [db: ${this.dbName}] [collect: ${collectName}]: `, date, document);
             }
         } catch (e) {
             console.error('[Warn] insert data error: ', e);

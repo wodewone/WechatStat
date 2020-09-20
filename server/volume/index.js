@@ -20,8 +20,6 @@ if (!fs.existsSync(otcPath)) {
 const dbVol = new Database({db: 'hb'});
 const dbOtc = new Database({db: 'hbOtc'});
 
-console.info(232, dbVol);
-
 /**
  * get date
  * @param format YYYY MM DD
