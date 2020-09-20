@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "local": "node app.js",
     "dev": "DEV=1 node app.js",
     "pm2": "pm2 startOrRestart ecosystem.config.js"
   },

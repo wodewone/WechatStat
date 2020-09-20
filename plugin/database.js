@@ -172,7 +172,7 @@ module.exports = class Database {
         }
         const collection = await this.getCollection(collectName);
         try {
-            await collection.updateOne(query, {"$set": data}, {"upsert": true});
+            return collection.updateOne(query, {"$set": data}, {"upsert": true});
         } catch (e) {
             console.warn('[Warn] Execute update data: ', e);
         }

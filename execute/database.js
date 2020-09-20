@@ -107,8 +107,8 @@ const fixData = async function () {
         const ave = getAveraging(dayData);
         const doc = {...markets, ave};
 
-        await db.updateData({date}, doc, collectName);
-        console.info('update ', date, doc);
+        const {result} = await db.updateData({date}, doc, collectName);
+        console.info('update ', date, doc, result);
     });
 };
 
