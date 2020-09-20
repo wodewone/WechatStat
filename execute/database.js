@@ -92,24 +92,25 @@ const fixData = async function () {
     const {getAveraging} = Database.utils;
     const collectName = Database.getCollectName('set');
     const collection = await db.getCollection(collectName);
-    const arrList = await collection.find({"date": {$gt: 20200901}}, {"_id": 0}).toArray();
-    const list = arrList.filter(({low, close, open, high, ave}) => [low, close, open, high, ave].filter(v => isOtc ? v > 10 : v < 10).length);
+    const all = await collection.find({date: {$gt: 20200919}}, {"_id": 0}).toArray();
+    // const all = await collection.find({"date": 20200920}, {"_id": 0}).toArray();
+    // const list = all.filter(({low, close, open, high, ave}) => [low, close, open, high, ave].filter(v => isOtc ? v > 10 : v < 10).length);
 
-    console.info('get ', list);
+    // console.info('get ', list);
     console.info('====================================');
 
     list.forEach(async ({date}) => {
-        date = date + '';
-        const collectKey = Database.getCollectName('key', date);
+        const dateStr = date + '';
+        const collectKey = Database.getCollectName('key', dateStr);
         const collection = await db.getCollection(collectKey);
-        const dayData = await Database.getDayKline(collection, date);
+        const dayData = await Database.getDayKline(collection, dateStr);
         const markets = await Database.handlerMarketList(dayData);
         const ave = getAveraging(dayData);
         const doc = {...markets, ave};
 
-        const {result} = await db.updateData({date}, doc, collectName);
-        console.info('update ', date, doc, result);
+        await db.updateData({date}, doc, collectName);
+        console.info('[Excute] ', date, doc);
     });
 };
 
-fixData();
+// fixData();

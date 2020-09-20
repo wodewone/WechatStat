@@ -141,7 +141,6 @@ module.exports = class Database {
         const {getAveraging} = utils;
 
         const {data: defaultValue = 0} = (Array.isArray(doc) ? doc[0] : doc) || {};
-
         const getKline = async () => {
             if (Array.isArray(doc)) {
                 return doc;
@@ -151,9 +150,7 @@ module.exports = class Database {
             }
         };
         const dayKline = await getKline();
-
         const ave = getAveraging(dayKline) || defaultValue;
-
         const market = Array.isArray(doc) ? await handlerMarketList(doc) : await handlerMarketValue(await this.getCollection(getCollectName('set')), defaultValue, _date);
 
         return {...market, ave};
@@ -208,6 +205,7 @@ module.exports = class Database {
         const {date2number} = utils;
 
         const setData = await this.getMarketsValue(doc, dateline);
+
         const collectName = getCollectName('set');
         const date = date2number(dateline);
 
