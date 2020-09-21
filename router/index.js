@@ -8,7 +8,7 @@ const router = new Router({
 const db_hb = new Database({db: 'hb'});
 
 router.get('/hb/volume', async ctx => {
-    const {query: {limit = 30} = {}} = ctx;
+    const {query: {limit} = {}} = ctx;
     ctx.body = await db_hb.queryData(limit);
 
 });

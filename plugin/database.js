@@ -262,7 +262,7 @@ module.exports = class Database {
         const collectName = getCollectName('set');
         const collection = await this.getCollection(collectName);
 
-        return collection({date: {$gt: startDate}}, {projection: {"_id": 0}});
+        return collection.find({date: {$gt: startDate}}, {projection: {"_id": 0}}).toArray();
     }
 
     /**
