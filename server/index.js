@@ -15,13 +15,11 @@ const getLog = (type) => {
     console.info(`[${type}] [${process.datetime()}]`);
 };
 
-const router = new Router({
-    prefix: '/v1'
-});
+const router = new Router();
 
 volume.initDataRecord();
 
-router.use('/wechat', wechat(wechatConfig).middleware(async (msg, ctx, next) => {
+router.all('wechat', '/wechat', wechat(wechatConfig).middleware(async (msg, ctx, next) => {
     if (msg.MsgType === 'text') {
         const title = msg.Content || '';
         if (title.includes('fear')) {

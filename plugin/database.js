@@ -212,7 +212,7 @@ module.exports = class Database {
         if (!process.env.DEV) {
             return this.updateData({date}, setData, collectName);
         } else {
-            console.info(`[updateDayKline] [db: ${this.dbName}] [collectName: ${collectName}] :`, date, setData);
+            console.info(`[updateDayKline] [db: ${this.dbName}] [collectName: ${collectName}] :`, date);
         }
     }
 
@@ -237,7 +237,7 @@ module.exports = class Database {
                     return collection.insertOne(document);
                 }
             } else {
-                console.info(`[insertData] [db: ${this.dbName}] [collect: ${collectName}]: `, date, document);
+                console.info(`[insertData] [db: ${this.dbName}] [collect: ${collectName}]: `, date);
             }
         } catch (e) {
             console.error('[Warn] insert data error: ', e);
