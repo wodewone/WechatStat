@@ -3,10 +3,10 @@ const moment = require('moment');
 
 const db = require('./mongodb');
 
-// TODO:【mongodb docs】API https://docs.mongodb.com/v4.2/reference/method/js-collection/
-// TODO:【mongodb-node docs】API http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html
-// TODO:【decimal.js docs】API http://mikemcl.github.io/decimal.js/
-// TODO:【mongodb 中文 docs】API https://www.docs4dev.com/docs/zh/mongodb/v3.6/reference/reference-method-db.collection.find.html
+//【mongodb docs】API https://docs.mongodb.com/v4.2/reference/method/js-collection/
+//【mongodb-node docs】API http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html
+//【decimal.js docs】API http://mikemcl.github.io/decimal.js/
+//【mongodb 中文 docs】API https://www.docs4dev.com/docs/zh/mongodb/v3.6/reference/reference-method-db.collection.find.html
 
 module.exports = class Database {
     dbName = 'hb';

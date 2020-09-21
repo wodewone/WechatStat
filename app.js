@@ -9,16 +9,16 @@ process.datetime = () => {
 };
 
 const {server: {PORT}} = require('./config');
-const {wechat} = require('./server');
-const router = require('./router');
+const _wechat = require('./server');
+const _interface = require('./router');
 
 const app = new koa();
 
 // wechat serve
-app.use(wechat);
+app.use(_wechat.routes());
 
 // http serve
-app.use(router.routes()).use(router.allowedMethods());
+app.use(_interface.routes()).use(_interface.allowedMethods());
 
 app.listen(PORT);
 

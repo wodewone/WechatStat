@@ -7,23 +7,9 @@
 
 启动进程文件
 
-```pm2 start ecosystem.config.js```
+```npm i```
 
-停止进程文件
-
-```pm2 stop ecosystem.config.js```
-
-重启进程文件
-
-```pm2 restart ecosystem.config.js```
-
-重新加载进程文件
-
-```pm2 reload ecosystem.config.js```
-
-删除进程文件
-
-```pm2 delete ecosystem.config.js```
+```npm run pm2```
 
 ### Update
 
@@ -38,3 +24,14 @@
 [Linux SSR](https://smileorigin.site/2018/12/21/Linux/Linux%20SSR/)
 
 [关于Node进程管理器PM2使用技巧和需要注意的地方](https://github.com/jawil/blog/issues/7)
+
+### API 
+[【PM2】](https://pm2.keymetrics.io/docs/usage/pm2-doc-single-page/)
+
+[【mongodb docs】]( https://docs.mongodb.com/v4.2/reference/method/js-collection/)
+
+[【mongodb-node docs】]( http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html)
+
+[【decimal.js docs】]( http://mikemcl.github.io/decimal.js/)
+
+[【mongodb 中文 docs】]( https://www.docs4dev.com/docs/zh/mongodb/v3.6/reference/reference-method-db.collection.find.html)
