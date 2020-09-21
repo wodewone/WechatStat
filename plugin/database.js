@@ -15,6 +15,18 @@ module.exports = class Database {
         this.dbName = Database.getDb(db);
     }
 
+    static getDb(key = String) {
+        const dbList = {
+            test: 'test',
+            hb: 'huobi',
+            hbOtc: 'huobi_otc',
+        };
+        if (dbList[key]) {
+            return dbList[key];
+        }
+        return key;
+    }
+
     static utils = {
         amendDateTime(date = '2001-01-01') {
             return new Date(`${date} 00:00:00`);
@@ -36,18 +48,6 @@ module.exports = class Database {
             return moment(datetime).format(format) * 1;
         }
     };
-
-    static getDb(key = String) {
-        const dbList = {
-            test: 'test',
-            hb: 'huobi',
-            hbOtc: 'huobi_otc',
-        };
-        if (dbList[key]) {
-            return dbList[key];
-        }
-        return key;
-    }
 
     static getCollectName(key, _date) {
 

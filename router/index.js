@@ -1,13 +1,15 @@
 const Router = require('koa-router');
-const {queryData} = require('../plugin/database');
+const Database = require('../plugin/database');
 
 const router = new Router({
     prefix: '/v1'
 });
 
+const db_hb = new Database({db: 'hb'});
+
 router.get('/hb/volume', async ctx => {
     const {query: {limit = 30} = {}} = ctx;
-    ctx.body = await queryData(limit);
+    ctx.body = await db_hb.queryData(limit);
 
 });
 
