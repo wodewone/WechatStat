@@ -11,7 +11,9 @@
   "author": "wodewone",
   "license": "ISC",
   "dependencies": {
+    "@antv/f2": "^3.7.7",
     "axios": "^0.18.1",
+    "canvas": "^2.6.1",
     "chalk": "^4.1.0",
     "co-wechat": "^2.3.0",
     "decimal.js": "^10.2.0",
@@ -19,6 +21,7 @@
     "koa": "^2.7.0",
     "moment": "^2.24.0",
     "mongodb": "^3.6.0",
+    "numeral": "^2.0.6",
     "request-promise": "^4.2.4",
     "svg-chartist": "^1.0.1",
     "svg2img": "^0.6.0",

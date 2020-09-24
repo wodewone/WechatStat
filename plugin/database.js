@@ -9,9 +9,9 @@ const db = require('./mongodb');
 //【mongodb 中文 docs】API https://www.docs4dev.com/docs/zh/mongodb/v3.6/reference/reference-method-db.collection.find.html
 
 module.exports = class Database {
-    dbName = 'hb';
+    dbName;
 
-    constructor({db} = {}) {
+    constructor({db = 'hb'} = {}) {
         this.dbName = Database.getDb(db);
     }
 
@@ -171,7 +171,7 @@ module.exports = class Database {
         try {
             return collection.updateOne(query, {"$set": data}, {"upsert": true});
         } catch (e) {
-            console.warn('[Warn] Execute update data: ', e);
+            process.console.warn('Update Data', 'Execute update data: ', e);
         }
     }
 
@@ -184,13 +184,13 @@ module.exports = class Database {
     async getCollection(collectName, force = false) {
         const {dbName} = this;
         try {
-            const client = await db.instance(dbName, force).catch(e => console.info('[Info] Get collection instance error:', e));
+            const client = await db.instance(dbName, force).catch(e => process.console.info('Get Collection','Get collection instance error:', e));
             return client.db(dbName).collection(collectName);
         } catch (e) {
             if (!force) {
                 return this.getCollection(collectName, true);
             }
-            console.warn(`[Warn] [db: ${dbName}] Collection get Error!`);
+            process.console.warn('Get Collection',`[db: ${dbName}] Collection get Error!`);
         }
     }
 
@@ -212,7 +212,7 @@ module.exports = class Database {
         if (!process.env.DEV) {
             return this.updateData({date}, setData, collectName);
         } else {
-            console.info(`[updateDayKline] [db: ${this.dbName}] [collectName: ${collectName}] :`, date);
+            process.console.info('Update Day Kline', `[db: ${this.dbName}] [collectName: ${collectName}] :`, date);
         }
     }
 
@@ -237,10 +237,10 @@ module.exports = class Database {
                     return collection.insertOne(document);
                 }
             } else {
-                console.info(`[insertData] [db: ${this.dbName}] [collect: ${collectName}]: `, date);
+                process.console.info('Insert Data', `[db: ${this.dbName}] [collect: ${collectName}]: `, date);
             }
         } catch (e) {
-            console.error('[Warn] insert data error: ', e);
+            process.console.error('Insert Data', 'insert data error: ', e);
             return null;
         }
     }
@@ -255,14 +255,19 @@ module.exports = class Database {
             return [];
         }
         const {getCollectName, utils} = Database;
-        const {date2number} = utils;
+        const {date2number, time2date} = utils;
 
         const today = moment().dayOfYear();
         const startDate = date2number(moment().dayOfYear(today - range));
         const collectName = getCollectName('set');
         const collection = await this.getCollection(collectName);
+        const list = await collection.find({date: {$gt: startDate}}, {projection: {"_id": 0}}).toArray();
 
-        return collection.find({date: {$gt: startDate}}, {projection: {"_id": 0}}).toArray();
+        return list.map(item => {
+            let {date} = item;
+            date = time2date(date + '');
+            return {...item, date};
+        });
     }
 
     /**
@@ -271,7 +276,7 @@ module.exports = class Database {
      * @returns {Promise<void>}
      */
     async addDoc2Cloud(doc) {
-        await this.insertData(doc).catch(e => console.error('[addDoc2Cloud] ', e));
-        await this.updateDayKline(doc).catch(e => console.error('[addDoc2Cloud] ', e));
+        await this.insertData(doc).catch(e => process.console.error('addDoc2Cloud', e));
+        await this.updateDayKline(doc).catch(e => process.console.error('addDoc2Cloud', e));
     }
 };

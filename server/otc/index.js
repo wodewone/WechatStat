@@ -1,29 +1,23 @@
-const volume = require("../volume");
-const makeCharts = require('../charts/makeCharts');
-
-module.exports = otc = {
-    async getChart({period, limit, density, local}) {
-        // const {labels, series} = await volume.getChartData({
-        //     type: 'otc',
-        //     full: false,
-        //     period, limit, density,
-        // });
-        let {labels, series} = await volume.getChartDataV2({limit, type: 'otc'});
-        let mediaId = await makeCharts({
-            local,
-            labels,
-            series: [series],
-            title: 'Huobi OTC USDT MARKET',
-            subtitle: 'USDT 日均价',
-        }, {fileName: 'otc'});
-        if (mediaId) {
-            return {
-                type: "image",
-                content: {mediaId},
-            };
-        }
-        return '…………';
+module.exports = {
+    /**
+     *
+     * @param limit
+     * @returns {Promise<*[]>}
+     */
+    async getChartData(limit) {
+        const Database = require('../../plugin/database');
+        const db = new Database({db: 'hbOtc'});
+        return db.queryData(limit).catch(() => ([]));
+    },
+    /**
+     *
+     * @param limit
+     * @returns {Promise<{type: string, content: {mediaId: *|string}}|string>}
+     */
+    async getImg(limit) {
+        const {getChartImg, handlerChartData} = require('../../plugin/utils');
+        const _d = await this.getChartData(limit);
+        const _l = handlerChartData(_d, {type: 'Otc'});
+        return getChartImg(_l);
     }
 };
-
-// otc.getChart({limit: 300, local: 1, period: 'min'});

@@ -1,14 +1,11 @@
+require('./plugin/prefix');
 const koa = require('koa');
-const moment = require('moment');
 const chalk = require('chalk');
 
+const {server: {PORT}} = require('./config');
 const {getIpv4} = require('./plugin/utils');
 
-process.datetime = () => {
-    return moment().format('YYYY-MM-DD HH:mm:ss')
-};
 
-const {server: {PORT}} = require('./config');
 const _wechat = require('./server');
 const _interface = require('./router');
 

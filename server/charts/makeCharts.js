@@ -4,20 +4,6 @@ const svg2png = require('svg2png');
 const chartistSvg = require('svg-chartist');
 const rp = require('request-promise');
 
-const timerObj = {};
-const logTimer = (index, complete = true) => {
-    const time = +new Date();
-    if (timerObj[index]) {
-        const down = timerObj[index];
-        if (complete) {
-            delete timerObj[index];
-        }
-        return `${index} | ` + (time - down) / 1000 + 'sec';
-    } else {
-        timerObj[index] = time;
-    }
-};
-
 /**
  * API 文档 (https://itbilu.com/nodejs/npm/BkCASacpm.html)
  * @param labels    Y轴 坐标系
@@ -30,7 +16,7 @@ const logTimer = (index, complete = true) => {
  */
 module.exports = async ({local, labels, series, title = '', subtitle = ''}, {filePath = './', fileName = 'chart'}) => {
     console.info(`##### [BEGIN] Record Chart Time #####`);
-    logTimer(1);
+    process.process.logTimer(1);
     const nginxPath = local ? '/chartsImg/backup' : '/home/www/wechat/';
     const chartData = {
         title,
@@ -101,14 +87,15 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
         console.warn('[Warn] svg2png error: ', e);
     }
 
-    console.info(`##### Get make Img Time: (${logTimer(1)}) #####`);
+    console.info(`##### Get make Img Time: (${process.logTimer(1)}) #####`);
 
     if(local){
         return 'success !';
     }
     // 上传png图到微信临时空间，获得media_id
     try {
-        logTimer(2);
+        const logTimeId = +new Date();
+        process.logTimer(logTimeId);
         const form = {
             smfile: fs.createReadStream(pngPathName),
         };
@@ -124,7 +111,7 @@ module.exports = async ({local, labels, series, title = '', subtitle = ''}, {fil
             json: true,
         };
         let {media_id, created_at} = await rp(opt);
-        console.info(`##### [END] Chart Total Time: (${logTimer(2)}) #####`);
+        console.info(`##### [END] Chart Total Time: (${process.logTimer(logTimeId)}) #####`);
         return media_id;
     } catch (e) {
         console.warn('Warn: Marke image faild: ', e);

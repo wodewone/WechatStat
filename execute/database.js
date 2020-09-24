@@ -1,7 +1,5 @@
 const moment = require('moment');
-process.datetime = () => {
-    return moment().format('YYYY-MM-DD HH:mm:ss')
-};
+require('../plugin/prefix');
 
 const Database = require('../plugin/database');
 
@@ -94,12 +92,12 @@ const fixData = async function () {
     const collection = await db.getCollection(collectName);
     const all = await collection.find({date: {$gt: 20200919}}, {"_id": 0}).toArray();
     // const all = await collection.find({"date": 20200920}, {"_id": 0}).toArray();
-    // const list = all.filter(({low, close, open, high, ave}) => [low, close, open, high, ave].filter(v => isOtc ? v > 10 : v < 10).length);
+    const list = all.filter(({low, close, open, high, ave}) => [low, close, open, high, ave].filter(v => isOtc ? v > 10 : v < 10).length);
 
     // console.info('get ', list);
     console.info('====================================');
 
-    list.forEach(async ({date}) => {
+    for (const {date} of list) {
         const dateStr = date + '';
         const collectKey = Database.getCollectName('key', dateStr);
         const collection = await db.getCollection(collectKey);
@@ -110,7 +108,16 @@ const fixData = async function () {
 
         await db.updateData({date}, doc, collectName);
         console.info('[Excute] ', date, doc);
-    });
+    }
 };
 
-// fixData();
+const drawChart = async () => {
+    const f2Chart = require('../plugin/f2Charts');
+    const db = new Database();
+    const data = await db.queryData(300);
+
+    const res = f2Chart(data);
+    console.info(981, res);
+};
+
+// drawChart();
