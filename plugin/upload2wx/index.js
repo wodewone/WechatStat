@@ -4,8 +4,6 @@ const rp = require('request-promise');
 module.exports = async (imgPathName) => {
     try {
         const logTimeId = process.logTimer();
-        console.info(`##### [BEGIN] Record upload img to wechat #####`);
-
         const form = {
             smfile: fs.createReadStream(imgPathName),
         };
@@ -21,10 +19,9 @@ module.exports = async (imgPathName) => {
             json: true,
         };
         let {media_id} = await rp(opt);
-        console.info(`##### [END] Upload img to wechat time: (${process.logTimer(logTimeId)}) #####`);
+        process.console.info('upload 2 wx', process.logTimer(logTimeId));
         return media_id;
     } catch (e) {
-        console.warn('Warn: Marke image faild: ', e);
-        return 'Warn: Marke image faild!';
+        process.console.warn('upload 2 wx', 'Warn: Marke image faild: ', e);
     }
 };

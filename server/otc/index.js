@@ -17,7 +17,7 @@ module.exports = {
     async getImg(limit) {
         const {getChartImg, handlerChartData} = require('../../plugin/utils');
         const _d = await this.getChartData(limit);
-        const _l = handlerChartData(_d, {type: 'Otc'});
+        const _l = handlerChartData(_d, {x: 'date', y: 'ave', type: 'Otc'});
         return getChartImg(_l);
     }
 };

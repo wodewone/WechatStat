@@ -10,14 +10,18 @@ require('@antv/f2/lib/component/guide');                    // 加载 guide 组�
 const Guide = require('@antv/f2/lib/plugin/guide');        // Guide 插件
 const Legend = require('@antv/f2/lib/plugin/legend');      // Legend 插件
 F2.Chart.plugins.register([Legend, Guide]);        // 注册以上插件
+F2.Global.setTheme({
+    fontFamily: 'PingFang SC',
+});
 
-const drawChart = ({data, width, height}) => {
+const drawChart = ({data, width, height, pixelRatio}) => {
     const canvas = Canvas.createCanvas(width, height);
     const context = canvas.getContext('2d');
     const chart = new F2.Chart({
         context,
         width,
         height,
+        pixelRatio
     });
     chart.source(data, {
         date: {
@@ -45,7 +49,7 @@ const drawChart = ({data, width, height}) => {
             return textCfg;
         }
     });
-    chart.line().position('date*ave').color('type');
+    chart.line().position('date*data').color('type');
     // chart.point().position('date*ave').style({
     //     stroke: '#fff',
     //     lineWidth: 1
@@ -55,8 +59,9 @@ const drawChart = ({data, width, height}) => {
 };
 
 module.exports = (data = [{date: 20010101, data: 1234.5678, type: null}]) => {
-    const width = 400;
-    const height = 267;
+    const pixelRatio = 2;
+    const width = 400 * pixelRatio;
+    const height = 267 * pixelRatio;
     const bgCanvas = Canvas.createCanvas(width, height);
     const bgContext = bgCanvas.getContext('2d');
     const chartCanvas = drawChart({data, width, height});
@@ -67,6 +72,9 @@ module.exports = (data = [{date: 20010101, data: 1234.5678, type: null}]) => {
 
     const chartName = `chart-${moment().format('YYYYMMDD-HHmmss')}.jpg`;
     const filePth = path.join(__dirname, 'chartsImg/');
+    if (!fs.existsSync(filePth)) {
+        fs.mkdirSync(filePth);
+    }
     const pathName = path.join(filePth, chartName);
     bgCanvas.createPNGStream().pipe(fs.createWriteStream(pathName));
 

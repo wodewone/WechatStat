@@ -20,7 +20,7 @@ try {
                 if (complete) {
                     delete timerObj[timeId];
                 }
-                return `${timeId} | ` + (now - begin) / 1000 + 'sec';
+                return `耗时：${(now - begin) / 1000} sec`;
             } else {
                 timerObj[timeId] = now;
                 return timeId;
