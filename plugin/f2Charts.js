@@ -64,7 +64,7 @@ const drawChart = ({data, width, height, pixelRatio}) => {
  * @param stream
  * @returns {{pathName: string, chartName: string}|*}
  */
-module.exports = (data = [], filename, stream) => {
+module.exports = async (data = [], filename, stream) => {
     const pixelRatio = 2;
     const width = 400 * pixelRatio;
     const height = 267 * pixelRatio;
@@ -84,12 +84,12 @@ module.exports = (data = [], filename, stream) => {
 
     const pathname = chartImgPath() + filename;
     if (stream) {
-        console.info(1112, fs.createWriteStream(pathname));
+        // console.info(1112, stream);
         // return bgCanvas.createPNGStream().pipe(stream);
-        bgCanvas.createPNGStream().pipe(stream);
+        bgCanvas.createPNGStream().pipe(stream.res);
         return true;
     } else {
-        bgCanvas.createPNGStream().pipe(fs.createWriteStream(pathname));
+        await bgCanvas.createPNGStream().pipe(fs.createWriteStream(pathname));
         return {
             filename,
             pathname

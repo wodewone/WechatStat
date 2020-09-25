@@ -1,5 +1,6 @@
 require('./plugin/prefix');
 const koa = require('koa');
+const serve = require('koa-static');
 const chalk = require('chalk');
 
 const {server: {PORT}} = require('./config');
@@ -15,6 +16,8 @@ app.use(_wechat.routes());
 
 // http serve
 app.use(_interface.routes()).use(_interface.allowedMethods());
+
+app.use(serve('./'));
 
 app.listen(PORT);
 
