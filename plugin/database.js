@@ -10,9 +10,17 @@ const db = require('./mongodb');
 
 module.exports = class Database {
     dbName;
+    dbInstance;
 
     constructor({db = 'hb'} = {}) {
         this.dbName = Database.getDb(db);
+        Database.getDbInstance.call(this, this.dbName);
+    }
+
+    static getDbInstance(name) {
+        db.instance(name).then(instance => {
+            this.dbInstance = instance;
+        }).catch(e => process.console.info('Get Collection', 'Get collection instance error:', e));
     }
 
     static getDb(key = String) {
@@ -182,15 +190,11 @@ module.exports = class Database {
      * @returns {Promise<*|undefined>}
      */
     async getCollection(collectName, force = false) {
-        const {dbName} = this;
+        const {dbName, dbInstance} = this;
         try {
-            const client = await db.instance(dbName, force).catch(e => process.console.info('Get Collection','Get collection instance error:', e));
-            return client.db(dbName).collection(collectName);
+            return dbInstance.collection(collectName);
         } catch (e) {
-            if (!force) {
-                return this.getCollection(collectName, true);
-            }
-            process.console.warn('Get Collection',`[db: ${dbName}] Collection get Error!`);
+            process.console.warn('Get Collection', `[db: ${dbName}] Collection get Error!`);
         }
     }
 
@@ -209,7 +213,7 @@ module.exports = class Database {
         const collectName = getCollectName('set');
         const date = date2number(dateline);
 
-        if (!process.env.DEV) {
+        if (process.env.production) {
             return this.updateData({date}, setData, collectName);
         } else {
             process.console.info('Update Day Kline', `[db: ${this.dbName}] [collectName: ${collectName}] :`, date);
@@ -230,7 +234,7 @@ module.exports = class Database {
             const collectName = Database.getCollectName('key', date);
             const collection = await this.getCollection(collectName);
 
-            if (!process.env.DEV) {
+            if (process.env.production) {
                 if (Array.isArray(document)) {
                     return collection.insertMany(document);
                 } else {
@@ -251,6 +255,7 @@ module.exports = class Database {
      * @returns {Promise<*[]|*>}
      */
     async queryData(range = 7) {
+        const timeId = process.logTimer();
         if (!range || +range <= 0) {
             return [];
         }
@@ -263,6 +268,7 @@ module.exports = class Database {
         const collection = await this.getCollection(collectName);
         const list = await collection.find({date: {$gt: startDate}}, {projection: {"_id": 0}}).toArray();
 
+        process.console.info('query data', `[db: ${this.dbName}]`, process.logTimer(timeId));
         return list.map(item => {
             let {date} = item;
             date = time2date(date + '');

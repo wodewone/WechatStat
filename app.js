@@ -5,7 +5,6 @@ const chalk = require('chalk');
 const {server: {PORT}} = require('./config');
 const {getIpv4} = require('./plugin/utils');
 
-
 const _wechat = require('./server');
 const _interface = require('./router');
 

@@ -5,8 +5,6 @@ const axios = require('axios');
 const {HBVOLURL, HBOTCURL} = require('../config');
 const Database = require('../../plugin/database');
 
-require('../../plugin/prefix');
-
 const dbVol = new Database({db: 'hb'});
 const dbOtc = new Database({db: 'hbOtc'});
 

@@ -12,51 +12,26 @@ module.exports = {
         const networks = os.networkInterfaces();
         return [].concat(...Object.values(networks)).find(({family, address, internal}) => family === 'IPv4' && address !== '127.0.0.1' && !internal) || {};
     },
-    async getChartImg(data = []) {
-        const timeId = process.logTimer();
-        const f2chart = require('./f2Charts');
-        const upload2wx = require('./upload2wx');
 
-        const {pathName} = await f2chart(data);
-        if (!process.env.DEV) {
-            const mediaId = await upload2wx(pathName);
-            process.console.info('upload 2 wx', process.logTimer(timeId));
-            if (mediaId) {
-                return {
-                    type: "image",
-                    content: {
-                        mediaId,
-                    },
-                };
+    parseQuery(query) {
+        const decode = decodeURIComponent;
+        let res = {};
+        query = query.trim().replace(/^([?#&])/, '');
+        if (!query) {
+            return res
+        }
+        query.split('&').forEach(function (param) {
+            const parts = param.replace(/\+/g, ' ').split('=');
+            const key = decode(parts.shift());
+            const val = parts.length > 0 ? decode(parts.join('=')) : null;
+            if (res[key] === undefined) {
+                res[key] = val;
+            } else if (Array.isArray(res[key])) {
+                res[key].push(val);
             } else {
-                return '[Warn] Marke image faild!';
+                res[key] = [res[key], val];
             }
-        } else {
-            process.console.info('get chart img', pathName, ' ', process.logTimer(timeId));
-            return pathName;
-        }
-    },
-    /**
-     *
-     * @param list
-     * @param x
-     * @param y
-     * @param type
-     * @param formatter
-     * @returns {[]}
-     */
-    handlerChartData(list = [], {x = 'date', y = 'data', type = '--', formatter} = {}) {
-        if (!list || !list.length) {
-            throw 'Params [list] must be Array type';
-        }
-        formatter = typeof formatter === 'function' ? formatter : null;
-        return list.map(item => {
-            const o = {};
-            o.date = (formatter ? formatter(x, item) : item[x]) || item[x] || '';
-            o.data = ((formatter ? formatter(y, item) : item[y]) || item[y]) * 1 || '';
-            o.type = type;
-            return o;
         });
+        return res;
     },
 };
-

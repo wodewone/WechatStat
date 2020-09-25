@@ -1,15 +1,11 @@
 const Router = require('koa-router');
 const wechat = require('co-wechat');
 
-const {responseTimeOut, getChartImg} = require('../plugin/utils');
 const {wechatConfig} = require('../config');
 const volume = require('./volume');
 const fear = require('./fear');
 const market = require('./market');
 const otc = require('./otc');
-
-// 记录数据
-require('./volume/getVolume');
 
 const server_url = `http://'118.24.53.67:8090/wechat`;
 const router = new Router();

@@ -1,9 +1,8 @@
 const fs = require('fs');
-const path = require('path');
 const Canvas = require('canvas');
-const moment = require('moment');
 const numeral = require('numeral');
 const F2 = require('@antv/f2/lib/core');
+const {chartImgPath} = require('../server/mixins');
 
 require('@antv/f2/lib/geom/line');                          // 加载折线图
 require('@antv/f2/lib/component/guide');                    // 加载 guide 组件
@@ -58,28 +57,42 @@ const drawChart = ({data, width, height, pixelRatio}) => {
     return canvas;
 };
 
-module.exports = (data = [{date: 20010101, data: 1234.5678, type: null}]) => {
+/**
+ *
+ * @param data      [{date: 20010101,data: 1234.5678, type: null}, ...]
+ * @param filename
+ * @param stream
+ * @returns {{pathName: string, chartName: string}|*}
+ */
+module.exports = (data = [], filename, stream) => {
     const pixelRatio = 2;
     const width = 400 * pixelRatio;
     const height = 267 * pixelRatio;
-    const bgCanvas = Canvas.createCanvas(width, height);
+    let bgCanvas = Canvas.createCanvas(width, height);
     const bgContext = bgCanvas.getContext('2d');
     const chartCanvas = drawChart({data, width, height});
 
-    bgContext.fillStyle = '#fff';
-    bgContext.fillRect(0, 0, width, height);
-    bgContext.drawImage(chartCanvas, 0, 0);
-
-    const chartName = `chart-${moment().format('YYYYMMDD-HHmmss')}.jpg`;
-    const filePth = path.join(__dirname, 'chartsImg/');
-    if (!fs.existsSync(filePth)) {
-        fs.mkdirSync(filePth);
+    const fileType = filename.split('.')[1];
+    const transparent = fileType === 'png';
+    if (transparent) {
+        bgCanvas = chartCanvas;
+    } else {
+        bgContext.fillStyle = '#fff';
+        bgContext.fillRect(0, 0, width, height);
+        bgContext.drawImage(chartCanvas, 0, 0);
     }
-    const pathName = path.join(filePth, chartName);
-    bgCanvas.createPNGStream().pipe(fs.createWriteStream(pathName));
 
-    return {
-        chartName,
-        pathName
-    };
+    const pathname = chartImgPath() + filename;
+    if (stream) {
+        console.info(1112, fs.createWriteStream(pathname));
+        // return bgCanvas.createPNGStream().pipe(stream);
+        bgCanvas.createPNGStream().pipe(stream);
+        return true;
+    } else {
+        bgCanvas.createPNGStream().pipe(fs.createWriteStream(pathname));
+        return {
+            filename,
+            pathname
+        };
+    }
 };

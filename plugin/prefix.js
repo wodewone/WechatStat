@@ -1,11 +1,11 @@
 const moment = require('moment');
+const {parseQuery} = require('../plugin/utils');
 try {
     if (process) {
         process.datetime = (format = 'YYYY-MM-DD HH:mm:ss') => {
             return moment().format(format)
         };
 
-        const timerObj = {};
         /**
          * 计算运行时间
          * 第一次调用开始记录，第二次获取
@@ -13,7 +13,9 @@ try {
          * @param complete      是否销毁ID记录【可选 | Boolean | 默认true用完销毁；false 记录多次时间差，统计总时间】
          * @returns {string|number}
          */
+        const timerObj = {};
         process.logTimer = (timeId = +new Date(), complete = true) => {
+            // console.error(11, timerObj);
             const now = +new Date();
             if (timerObj[timeId]) {
                 const begin = timerObj[timeId];
@@ -38,6 +40,28 @@ try {
                 console.error(`[${process.datetime()}] [ERROR] [${type}] ${str}`, ...str);
             },
         };
+
+        // 加载环境信息
+        if (process.env.NODE_ENV) {
+            process.console.info('NODE_ENV', process.env.NODE_ENV);
+            if (process.env.NODE_ENV === 'production')
+                process.env.production = 1;
+        }
+
+        // 加载 pm2 args参数
+        if (process.env.args) {
+            const pm2args = parseQuery(process.env.args);
+            process.env = {...process.env, ...pm2args};
+            for (const key in pm2args) {
+                if (!process.env[key]) {
+                    process.env[key] = pm2args[key];
+                    console.info(112, key, process.env[key]);
+                } else {
+                    console.error('prefix', `process.env 中已存在key为${key}的值，请检查并重新配置！`);
+                }
+            }
+        }
     }
 } catch (e) {
+    console.error('The error in prefix file! ', e);
 }

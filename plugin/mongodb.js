@@ -18,7 +18,11 @@ module.exports = {
             try {
                 // const URL = 'mongodb://localhost:27017/' + dbName;
                 const URL = `mongodb+srv://root:root@huobi.l4yiu.mongodb.net/${dbName}?retryWrites=true&w=majority`;
-                dbInstance[dbName] = await MongoClient.connect(URL, {useNewUrlParser: true, useUnifiedTopology: true});
+                const client = await MongoClient.connect(URL, {
+                    useNewUrlParser: true,
+                    useUnifiedTopology: true
+                });
+                dbInstance[dbName] = client.db(dbName);
                 process.console.info('MongoDb', `Connection Database [${dbName}] time to (${(+new Date() - st) / 1000})sec`);
             } catch (e) {
                 process.console.error('MongoDb', `connection [${dbName}] error`, e);
