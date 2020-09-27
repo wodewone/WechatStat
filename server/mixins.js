@@ -1,17 +1,17 @@
 const fs = require('fs');
 const path = require('path');
+const f2chart = require('plugin/f2Charts');
+
 const mixins = {
     /**
      *
      * @param data
      * @param filename
-     * @param stream
      * @returns {Promise<string|{type: string, content: {mediaId: *}}>}
      */
-    async getChartImgPath(data = [], filename, stream) {
+    async getChartImgPath(data = [], filename) {
         const timeId = process.logTimer();
-        const f2chart = require('../plugin/f2Charts');
-        const {pathname} = await f2chart(data, filename, stream);
+        const {pathname} = await f2chart(data, filename);
 
         process.console.info('chart img path', process.logTimer(timeId));
         return pathname;
@@ -45,16 +45,16 @@ const mixins = {
         return `${prefix}-${type}-${limit}-${date}.${suffix}`;
     },
 
-    chartImgPath() {
+    chartImgPath: (() => {
         const filePth = path.join(__dirname, '../chartsImg/');
         if (!fs.existsSync(filePth)) {
             fs.mkdirSync(filePth);
         }
         return filePth;
-    },
+    })(),
 
     checkChartImgCache(filename) {
-        const pathname = mixins.chartImgPath();
+        const pathname = mixins.chartImgPath;
         const filePath = path.join(pathname, filename);
         if (fs.existsSync(filePath)) {
             return filePath;
@@ -72,10 +72,11 @@ const mixins = {
         }
     },
 
-    async getTypeChartImg(type, limit, stream) {
+    async getTypeChartImg(type, limit) {
         const _l = await mixins.getTypeChartData(type, limit);
         const filename = mixins.chartImgName({date: +new Date()});
-        return mixins.getChartImgPath(_l, filename, stream);
+        // return mixins.getChartImgPath(_l, filename);
+        return [_l, filename];
     },
 
     async getTypeChartImgCache(type, limit) {
@@ -91,7 +92,7 @@ const mixins = {
 
     async getWxMedia(type, limit) {
         const timeId = process.logTimer();
-        const upload2wx = require('../plugin/upload2wx');
+        const upload2wx = require('plugin/upload2wx');
         const pathname = await mixins.getTypeChartImgCache(type, limit);
         if (process.env.production) {
             const mediaId = await upload2wx(pathname);

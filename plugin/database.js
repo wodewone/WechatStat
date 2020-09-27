@@ -14,13 +14,6 @@ module.exports = class Database {
 
     constructor({db = 'hb'} = {}) {
         this.dbName = Database.getDb(db);
-        Database.getDbInstance.call(this, this.dbName);
-    }
-
-    static getDbInstance(name) {
-        db.instance(name).then(instance => {
-            this.dbInstance = instance;
-        }).catch(e => process.console.info('Get Collection', 'Get collection instance error:', e));
     }
 
     static getDb(key = String) {
@@ -139,6 +132,17 @@ module.exports = class Database {
     }
 
     /**
+     * 获取数据库连接实例
+     * @returns {Promise<Database>}
+     */
+    async getDbInstance() {
+        if (!this.dbInstance) {
+            this.dbInstance = await db.instance(this.dbName).catch(e => process.console.info('Get Collection', 'Get collection instance error:', e));
+        }
+        return this;
+    }
+
+    /**
      * 计算行情数据
      * @param doc
      * @param _date
@@ -200,15 +204,15 @@ module.exports = class Database {
 
     /**
      * 更新指定日期的数据
-     * @param doc
+     * @param document
      * @param dateline
      * @returns {Promise<boolean|undefined>}
      */
-    async updateDayKline(doc, dateline = +new Date()) {
+    async updateDayKline(document, dateline = +new Date()) {
         const {getCollectName, utils} = Database;
         const {date2number} = utils;
 
-        const setData = await this.getMarketsValue(doc, dateline);
+        const setData = await this.getMarketsValue(document, dateline);
 
         const collectName = getCollectName('set');
         const date = date2number(dateline);
@@ -247,6 +251,7 @@ module.exports = class Database {
             process.console.error('Insert Data', 'insert data error: ', e);
             return null;
         }
+        return this;
     }
 
     /**

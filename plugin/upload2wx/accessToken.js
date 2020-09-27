@@ -1,7 +1,7 @@
 const fs = require('fs');
 const axios = require('axios');
 const guard_dog = require('guard_dog');
-const {wechatConfig} = require('../../config');
+const {wechatConfig} = require('config');
 
 const {appid, secret} = wechatConfig;
 

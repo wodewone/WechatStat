@@ -1,5 +1,5 @@
-const Database = require('../../plugin/database');
-const db = new Database({db: 'hbOtc'});
+const Database = require('plugin/database');
+const db = new Database({db: 'hbOtc'}).getDbInstance();
 
 module.exports = {
     /**

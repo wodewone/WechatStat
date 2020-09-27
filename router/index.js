@@ -1,21 +1,17 @@
+const path = require('path');
 const Router = require('koa-router');
-const getChart = require('./get-chart');
-const {getTypeChartData} = require('../server/mixins');
+const routerConfig = require('./router.config');
 
 const router = new Router({
-    prefix: '/v1'
+    prefix: '/v1/'
 });
 
-router.get('/hb/volume', async ctx => {
-    const {query: {limit} = {}} = ctx;
-    ctx.body = await getTypeChartData('volume', limit);
-});
+const routeRootPath = __dirname;
+const routerList = routerConfig(routeRootPath);
 
-router.get('/hb/otc', async ctx => {
-    const {query: {limit} = {}} = ctx;
-    ctx.body = await getTypeChartData('otc', limit);
+routerList.map(route => {
+    const routePath = path.join(routeRootPath, route);
+    router.get(route, require(routePath));
 });
-
-router.get('/get/chart', getChart);
 
 module.exports = router;

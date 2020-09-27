@@ -1,7 +1,7 @@
 const moment = require('moment');
-require('../plugin/prefix');
+require('plugin/prefix');
 
-const Database = require('../plugin/database');
+const Database = require('plugin/database');
 
 /* ===============================[TEST]=============================== */
 
@@ -112,7 +112,7 @@ const fixData = async function () {
 };
 
 const drawChart = async () => {
-    const f2Chart = require('../plugin/f2Charts');
+    const f2Chart = require('plugin/f2Charts');
     const db = new Database();
     const data = await db.queryData(300);
 

@@ -2,7 +2,7 @@ const fs = require('fs');
 const Canvas = require('canvas');
 const numeral = require('numeral');
 const F2 = require('@antv/f2/lib/core');
-const {chartImgPath} = require('../server/mixins');
+const {chartImgPath} = require('server/mixins');
 
 require('@antv/f2/lib/geom/line');                          // 加载折线图
 require('@antv/f2/lib/component/guide');                    // 加载 guide 组件
@@ -61,10 +61,9 @@ const drawChart = ({data, width, height, pixelRatio}) => {
  *
  * @param data      [{date: 20010101,data: 1234.5678, type: null}, ...]
  * @param filename
- * @param stream
  * @returns {{pathName: string, chartName: string}|*}
  */
-module.exports = async (data = [], filename, stream) => {
+module.exports = async (data = [], filename = '') => {
     const pixelRatio = 2;
     const width = 400 * pixelRatio;
     const height = 267 * pixelRatio;
@@ -82,17 +81,14 @@ module.exports = async (data = [], filename, stream) => {
         bgContext.drawImage(chartCanvas, 0, 0);
     }
 
-    const pathname = chartImgPath() + filename;
-    if (stream) {
-        // console.info(1112, stream);
-        // return bgCanvas.createPNGStream().pipe(stream);
-        bgCanvas.createPNGStream().pipe(stream.res);
-        return true;
-    } else {
+    const pathname = chartImgPath + filename;
+    if (filename) {
         await bgCanvas.createPNGStream().pipe(fs.createWriteStream(pathname));
         return {
             filename,
             pathname
         };
+    } else {
+        return bgCanvas;
     }
 };

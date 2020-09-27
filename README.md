@@ -35,3 +35,15 @@
 [【decimal.js docs】]( http://mikemcl.github.io/decimal.js/)
 
 [【mongodb 中文 docs】]( https://www.docs4dev.com/docs/zh/mongodb/v3.6/reference/reference-method-db.collection.find.html)
+
+### Question
+
+1. HTTP 返回图片不存储直接返回 stream
+
+> canvas画图表保存成图片，然后 http 请求返回图片类型  
+> `/v1/get/chart?limit=100&type=volume`  
+> 根据请求参数生成对应类型的数据图表  
+> 之前是生成图片后存储返回图片路径，然后 `ctx.body = fs.createReadStream(filePath)`   
+> 但是存储的图片也没有其他用处，增加写入-读取的过程既浪费内存又浪费时间，  
+> 并且`ctx.body`可以接受 stream，尝试一堆索性 `ctx.body = canvas.createPNGStream()`  
+> `/router/get/chart/index`

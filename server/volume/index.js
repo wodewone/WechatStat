@@ -1,6 +1,6 @@
 const {handlerChartData} = require('../mixins');
-const Database = require('../../plugin/database');
-const db = new Database();
+const Database = require('plugin/database');
+const db = new Database().getDbInstance();
 
 module.exports = {
     async getData(limit) {

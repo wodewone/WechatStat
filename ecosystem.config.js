@@ -16,29 +16,33 @@ module.exports = {
             max_restarts: 5,
             max_memory_restart: '200M',
             env: {
-                NODE_ENV: 'development'
+                NODE_ENV: 'development',
+                NODE_PATH: './'
             },
             env_production: {
-                NODE_ENV: 'production'
+                NODE_ENV: 'production',
+                NODE_PATH: './'
             }
         },
-        // {
-        //     name: 'record',
-        //     script: 'volume.js',
-        //     args: '',
-        //     instances: 1,
-        //     autorestart: true,
-        //     watch: false,
-        //     min_uptime: 10000,
-        //     max_restarts: 5,
-        //     max_memory_restart: '200M',
-        //     env: {
-        //         NODE_ENV: 'development'
-        //     },
-        //     env_production: {
-        //         NODE_ENV: 'production'
-        //     }
-        // },
+        {
+            name: 'record',
+            script: 'volume.js',
+            args: '',
+            instances: 1,
+            autorestart: true,
+            watch: false,
+            min_uptime: 10000,
+            max_restarts: 5,
+            max_memory_restart: '200M',
+            env: {
+                NODE_ENV: 'development',
+                NODE_PATH: './'
+            },
+            env_production: {
+                NODE_ENV: 'production',
+                NODE_PATH: './'
+            }
+        },
     ],
 
     deploy: {

@@ -1,7 +1,7 @@
 const Router = require('koa-router');
 const wechat = require('co-wechat');
 
-const {wechatConfig} = require('../config');
+const {wechatConfig} = require('config');
 const volume = require('./volume');
 const fear = require('./fear');
 const market = require('./market');

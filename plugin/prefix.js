@@ -1,5 +1,5 @@
 const moment = require('moment');
-const {parseQuery} = require('../plugin/utils');
+const {parseQuery} = require('plugin/utils');
 try {
     if (process) {
         process.datetime = (format = 'YYYY-MM-DD HH:mm:ss') => {

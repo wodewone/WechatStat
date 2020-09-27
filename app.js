@@ -11,13 +11,14 @@ const _interface = require('./router');
 
 const app = new koa();
 
+// 静态资源服务
+app.use(serve('./'));
+
 // wechat serve
 app.use(_wechat.routes());
 
 // http serve
 app.use(_interface.routes()).use(_interface.allowedMethods());
-
-app.use(serve('./'));
 
 app.listen(PORT);
 

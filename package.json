@@ -4,9 +4,9 @@
     "description": "",
     "main": "app.js",
     "scripts": {
-        "local": "node app.js",
-        "dev": "DEV=1 node app.js",
-        "pm2": "pm2 startOrRestart ecosystem.config.js --env production"
+        "dev": "pm2-dev start ecosystem.config.js --ignore chartsImg",
+        "stg": "pm2 startOrRestart ecosystem.config.js --env development",
+        "prd": "pm2 startOrRestart ecosystem.config.js --env production"
     },
     "author": "wodewone",
     "license": "ISC",
