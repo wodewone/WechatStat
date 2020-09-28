@@ -21,7 +21,7 @@ module.exports = {
      * @returns {Promise<*[]>}
      */
     async getChartData(limit) {
-        const {handlerChartData} = require('../mixins');
+        const {handlerChartData} = require('server/mixins');
         const _d = await this.getData(limit);
         return handlerChartData(_d, {x: 'date', y: 'ave', type: 'Otc'});
     }

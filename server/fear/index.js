@@ -1,5 +1,3 @@
-const {handlerChartData} = require('../mixins');
-
 module.exports = fear = {
     async getData(limit = 10) {
         const timeId = process.logTimer();
@@ -13,6 +11,7 @@ module.exports = fear = {
         });
     },
     async getChartData(limit) {
+        const {handlerChartData} = require('server/mixins');
         const _d = await this.getData(limit);
         return handlerChartData(_d, {
             x: 'date',
