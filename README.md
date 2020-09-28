@@ -8,8 +8,14 @@
 启动进程文件
 
 ```npm i```
+本地开发
+```npm run dev```
 
-```npm run pm2```
+生产环境
+```npm run prd```
+
+在线查看 PM2 运行状态
+https://app.pm2.io/
 
 ### Update
 
