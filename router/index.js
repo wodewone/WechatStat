@@ -9,9 +9,14 @@ const router = new Router({
 const routeRootPath = __dirname;
 const routerList = routerConfig(routeRootPath);
 
-routerList.map(route => {
+routerList.forEach(route => {
     const routePath = path.join(routeRootPath, route);
-    router.get(route, require(routePath));
+    const middleware = require(routePath);
+    try {
+        router.get(route, middleware);
+    } catch (e) {
+        process.log.warn('router/index', 'middleware not found: ', routePath);
+    }
 });
 
 module.exports = router;

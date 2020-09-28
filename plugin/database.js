@@ -137,7 +137,7 @@ module.exports = class Database {
      */
     async getDbInstance() {
         if (!this.dbInstance) {
-            this.dbInstance = await db.instance(this.dbName).catch(e => process.console.info('Get Collection', 'Get collection instance error:', e));
+            this.dbInstance = await db.instance(this.dbName).catch(e => process.log.info('Get Collection', 'Get collection instance error:', e));
         }
         return this;
     }
@@ -183,7 +183,7 @@ module.exports = class Database {
         try {
             return collection.updateOne(query, {"$set": data}, {"upsert": true});
         } catch (e) {
-            process.console.warn('Update Data', 'Execute update data: ', e);
+            process.log.warn('Update Data', 'Execute update data: ', e);
         }
     }
 
@@ -196,9 +196,12 @@ module.exports = class Database {
     async getCollection(collectName, force = false) {
         const {dbName, dbInstance} = this;
         try {
+            if (!dbInstance) {
+                await this.getDbInstance();
+            }
             return dbInstance.collection(collectName);
         } catch (e) {
-            process.console.warn('Get Collection', `[db: ${dbName}] Collection get Error!`);
+            process.log.warn('Get Collection', `[db: ${dbName}] `, e);
         }
     }
 
@@ -220,7 +223,7 @@ module.exports = class Database {
         if (process.env.production) {
             return this.updateData({date}, setData, collectName);
         } else {
-            process.console.info('Update Day Kline', `[db: ${this.dbName}] [collectName: ${collectName}] :`, date);
+            process.log.info('Update Day Kline', `[db: ${this.dbName}] [collectName: ${collectName}] :`, date);
         }
     }
 
@@ -245,10 +248,10 @@ module.exports = class Database {
                     return collection.insertOne(document);
                 }
             } else {
-                process.console.info('Insert Data', `[db: ${this.dbName}] [collect: ${collectName}]: `, date);
+                process.log.info('Insert Data', `[db: ${this.dbName}] [collect: ${collectName}]: `, date);
             }
         } catch (e) {
-            process.console.error('Insert Data', 'insert data error: ', e);
+            process.log.error('Insert Data', 'insert data error: ', e);
             return null;
         }
         return this;
@@ -264,16 +267,14 @@ module.exports = class Database {
         if (!range || +range <= 0) {
             return [];
         }
-        const {getCollectName, utils} = Database;
-        const {date2number, time2date} = utils;
-
+        const {getCollectName, utils: {date2number, time2date}} = Database;
         const today = moment().dayOfYear();
         const startDate = date2number(moment().dayOfYear(today - range));
         const collectName = getCollectName('set');
         const collection = await this.getCollection(collectName);
         const list = await collection.find({date: {$gt: startDate}}, {projection: {"_id": 0}}).toArray();
 
-        process.console.info('query data', `[db: ${this.dbName}]`, process.logTimer(timeId));
+        process.log.info('query data', `[db: ${this.dbName}]`, process.logTimer(timeId));
         return list.map(item => {
             let {date} = item;
             date = time2date(date + '');
@@ -287,7 +288,7 @@ module.exports = class Database {
      * @returns {Promise<void>}
      */
     async addDoc2Cloud(doc) {
-        await this.insertData(doc).catch(e => process.console.error('addDoc2Cloud', e));
-        await this.updateDayKline(doc).catch(e => process.console.error('addDoc2Cloud', e));
+        await this.insertData(doc).catch(e => process.log.error('addDoc2Cloud', e));
+        await this.updateDayKline(doc).catch(e => process.log.error('addDoc2Cloud', e));
     }
 };

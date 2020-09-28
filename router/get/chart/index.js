@@ -11,10 +11,10 @@ module.exports = async (ctx) => {
         ctx.body = canvas.createPNGStream();
         ctx.set('content-type', 'image/jpeg');
         ctx.status = 200;
-        process.console.info('/get/chart', `[${type}]`, process.logTimer('makeImg'));
+        process.log.info('/get/chart', `[${type}]`, process.logTimer('makeImg'));
     } catch (e) {
         ctx.status = 500;
         ctx.body = e;
-        process.console.error('/get/chart', e);
+        process.log.error('/get/chart', e);
     }
 };

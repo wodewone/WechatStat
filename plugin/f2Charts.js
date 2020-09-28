@@ -2,7 +2,6 @@ const fs = require('fs');
 const Canvas = require('canvas');
 const numeral = require('numeral');
 const F2 = require('@antv/f2/lib/core');
-const {chartImgPath} = require('server/mixins');
 
 require('@antv/f2/lib/geom/line');                          // 加载折线图
 require('@antv/f2/lib/component/guide');                    // 加载 guide 组件
@@ -81,6 +80,7 @@ module.exports = async (data = [], filename = '') => {
         bgContext.drawImage(chartCanvas, 0, 0);
     }
 
+    const {chartImgPath} = require('server/mixins');
     const pathname = chartImgPath + filename;
     if (filename) {
         await bgCanvas.createPNGStream().pipe(fs.createWriteStream(pathname));

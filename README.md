@@ -1,7 +1,7 @@
 ### README
 
 使用微信公众号查看统计数据
-> 需先申请微信公众号（类型不限，个人，企业均可）
+需先申请微信公众号（类型不限，个人，企业均可）
 
 ## START
 
@@ -40,10 +40,70 @@
 
 1. HTTP 返回图片不存储直接返回 stream
 
-> canvas画图表保存成图片，然后 http 请求返回图片类型  
-> `/v1/get/chart?limit=100&type=volume`  
-> 根据请求参数生成对应类型的数据图表  
-> 之前是生成图片后存储返回图片路径，然后 `ctx.body = fs.createReadStream(filePath)`   
-> 但是存储的图片也没有其他用处，增加写入-读取的过程既浪费内存又浪费时间，  
-> 并且`ctx.body`可以接受 stream，尝试一堆索性 `ctx.body = canvas.createPNGStream()`  
-> `/router/get/chart/index`
+canvas画图表保存成图片，然后 http 请求返回图片类型  
+`/v1/get/chart?limit=100&type=volume`  
+根据请求参数生成对应类型的数据图表  
+之前是生成图片后存储返回图片路径，然后 `ctx.body = fs.createReadStream(filePath)`  
+但是存储的图片也没有其他用处，增加写入-读取的过程既浪费内存又浪费时间，  
+并且`ctx.body`可以接受 stream，尝试一堆后直接 `ctx.body = canvas.createPNGStream()`
+  
+> 详见 `./router/get/chart/index.js`
+
+
+2. NODE require本地模块使用 '绝对路径'
+
+大多范例中 `node` 模块会使用**相对路径**基于当前当前文件进行引用，  
+但是实际中这样使用很不方便，尤其引用的路径嵌套比较深  
+`require(../../../../)` ?????  
+其实`node`中有相关方式来处理相关问题 = `NODE_PATH` （这里简单介绍用法，详情官方文档）
+
+> 描述一段示例，现有项目结构如下  
+```bash
+app
+├─index.js
+├─utils.js
+├─plugin
+|  ├─test1
+|  |   └test1.js
+|  ├─test2
+|  |   └test2.js
+```
+
+> index.js  
+```javascript
+require('./plugin/test1/test1.js')
+```
+
+> test1.js  
+```javascript
+require('../../utils.js')
+```
+
+> *test2.js* 中引用 *test1.js*
+```javascript
+require('../test1/test1.js')
+```
+
+然后运行`index.js`
+```bash
+node index.js
+```
+
+修改启动方式  
+```bash
+NODE_PATH=./ node app.js
+```
+> ./` 表示当前运行目录  
+
+即从当前运行目录开始检索引用模块，然后
+> *test1.js* 修改为  
+```javascript
+require('utils.js')
+```
+> *test2.js* 修改为  
+```javascript
+require('plugin/test1/test1.js')
+```
+
+> ~简单直观  
+> pm2 可以在配置文件中添加，详见 `./ecosystem.config.js`

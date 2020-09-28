@@ -2,6 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const f2chart = require('plugin/f2Charts');
 
+// 预连接数据库
+require('server/volume');
+require('server/otc');
+
 const mixins = {
     /**
      *
@@ -12,8 +16,7 @@ const mixins = {
     async getChartImgPath(data = [], filename) {
         const timeId = process.logTimer();
         const {pathname} = await f2chart(data, filename);
-
-        process.console.info('chart img path', process.logTimer(timeId));
+        process.log.info('chart img path', process.logTimer(timeId));
         return pathname;
     },
 
@@ -28,7 +31,7 @@ const mixins = {
      */
     handlerChartData(list = [], {x = 'date', y = 'data', type = '--', formatter} = {}) {
         if (!list || !list.length) {
-            process.console.error('handler chart data', 'Params [list] must be Array type: ', JSON.stringify(list));
+            process.log.error('handler chart data', 'Params [list] must be Array type: ', JSON.stringify(list));
             return [];
         }
         formatter = typeof formatter === 'function' ? formatter : null;
@@ -56,9 +59,7 @@ const mixins = {
     checkChartImgCache(filename) {
         const pathname = mixins.chartImgPath;
         const filePath = path.join(pathname, filename);
-        if (fs.existsSync(filePath)) {
-            return filePath;
-        }
+        return fs.existsSync(filePath) ? filePath : false;
     },
 
     async getTypeChartData(type = 'volume', limit = 10) {
@@ -75,7 +76,6 @@ const mixins = {
     async getTypeChartImg(type, limit) {
         const _l = await mixins.getTypeChartData(type, limit);
         const filename = mixins.chartImgName({date: +new Date()});
-        // return mixins.getChartImgPath(_l, filename);
         return [_l, filename];
     },
 
@@ -91,25 +91,20 @@ const mixins = {
 
 
     async getWxMedia(type, limit) {
-        const timeId = process.logTimer();
-        const upload2wx = require('plugin/upload2wx');
         const pathname = await mixins.getTypeChartImgCache(type, limit);
-        if (process.env.production) {
-            const mediaId = await upload2wx(pathname);
-            process.console.info('upload 2 wx', process.logTimer(timeId));
-            if (mediaId) {
-                return {
-                    type: "image",
-                    content: {
-                        mediaId,
-                    },
-                };
-            } else {
-                return '[Warn] Marke image faild!';
-            }
+        const upload2wx = require('plugin/upload2wx');
+        const mediaId = await upload2wx(pathname).catch(e => {
+            process.log.warn('getWxMedia', e);
+        });
+        if (mediaId) {
+            return {
+                type: "image",
+                content: {
+                    mediaId,
+                },
+            };
         } else {
-            process.console.info('get Wx media', process.logTimer(timeId));
-            return pathname;
+            return '[Warn] Marke image faild!';
         }
     },
 };

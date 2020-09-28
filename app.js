@@ -24,5 +24,5 @@ app.listen(PORT);
 
 const {address: IP} = getIpv4();
 const currentURL = chalk.blue.underline.bold(`http://${IP}:${PORT}/`);
-console.log(`[${process.datetime()}] Listen to Interface START; Url: ${currentURL}`);
-console.log(`[${process.datetime()}] Listen to Wechat Service START; [PORT: ${PORT}]`);
+process.log.info('ROUTER',`Listen to Interface START; Url: ${currentURL}`);
+process.log.info('WECHAT',`Listen to Wechat Service START; [PORT: ${PORT}]`);

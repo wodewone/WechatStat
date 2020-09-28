@@ -1,3 +1,4 @@
+require('plugin/prefix');
 // volume.getChartDataV2();
 
 // volume.getChart({period: 'days', limit: 100, density: 1, date: '', local: 1});

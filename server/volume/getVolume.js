@@ -22,7 +22,7 @@ const VOLUME = {
             }
             return file;
         } catch (e) {
-            process.console.error('Check File Dir', `_path = ${_path}: `);
+            process.log.error('Check File Dir', `_path = ${_path}: `);
             return false;
         }
     },
@@ -59,7 +59,7 @@ const VOLUME = {
             const list = HBVOLURL.map(url => axios.get(`https://${url}/-/x/pro/v1/hbg/get/volume`).catch());
             const {data: {data}} = await Promise.race(list).catch((e) => {
                 if (!force) {
-                    process.console.error('getVolData', 'force=1 ', e);
+                    process.log.error('getVolData', 'force=1 ', e);
                     return this.getVolData(1);
                 }
             });
@@ -67,7 +67,7 @@ const VOLUME = {
                 return data;
             }
         } catch (e) {
-            process.console.error('getVolData', e);
+            process.log.error('getVolData', e);
         }
     },
     async getOtcData(force) {
@@ -75,7 +75,7 @@ const VOLUME = {
             const list = HBOTCURL.map(url => axios.get(`https://${url}/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general`));
             const {data: {data}} = await Promise.race(list).catch((e) => {
                 if (!force) {
-                    process.console.error('getOtcData', 'force=1 ', e);
+                    process.log.error('getOtcData', 'force=1 ', e);
                     return this.getOtcData(1);
                 }
             });
@@ -86,12 +86,12 @@ const VOLUME = {
                 }
             }
         } catch (e) {
-            process.console.error('getOtcData', e);
+            process.log.error('getOtcData', e);
         }
     },
     timeEvent() {
-        this.setVolFileDate().catch(e => process.console.error('timeEvent', 'vol ', e));
-        this.setOtcFileDate().catch(e => process.console.error('timeEvent', 'otc ', e));
+        this.setVolFileDate().catch(e => process.log.error('timeEvent', 'vol ', e));
+        this.setOtcFileDate().catch(e => process.log.error('timeEvent', 'otc ', e));
         setTimeout(() => {
             this.timeEvent()
         }, 1000 * 60);

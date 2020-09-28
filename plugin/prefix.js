@@ -15,7 +15,6 @@ try {
          */
         const timerObj = {};
         process.logTimer = (timeId = +new Date(), complete = true) => {
-            // console.error(11, timerObj);
             const now = +new Date();
             if (timerObj[timeId]) {
                 const begin = timerObj[timeId];
@@ -29,7 +28,7 @@ try {
             }
         };
 
-        process.console = {
+        process.log = {
             info(type, ...str) {
                 console.info(`[${process.datetime()}] [INFO] [${type}]`, ...str);
             },
@@ -43,7 +42,7 @@ try {
 
         // 加载环境信息
         if (process.env.NODE_ENV) {
-            process.console.info('NODE_ENV', process.env.NODE_ENV);
+            process.log.info('NODE_ENV', process.env.NODE_ENV);
             if (process.env.NODE_ENV === 'production')
                 process.env.production = 1;
         }
@@ -55,7 +54,6 @@ try {
             for (const key in pm2args) {
                 if (!process.env[key]) {
                     process.env[key] = pm2args[key];
-                    console.info(112, key, process.env[key]);
                 } else {
                     console.error('prefix', `process.env 中已存在key为${key}的值，请检查并重新配置！`);
                 }
@@ -63,5 +61,5 @@ try {
         }
     }
 } catch (e) {
-    console.error('The error in prefix file! ', e);
+    console.error('Error in prefix file! ', e);
 }

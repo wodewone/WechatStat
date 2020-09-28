@@ -5,7 +5,7 @@ module.exports = fear = {
         const timeId = process.logTimer();
         const axios = require('axios');
         const {data: {data = []} = {}} = await axios.get(`https://api.alternative.me/fng/?limit=${limit}`).catch(() => ({}));
-        process.console.info('Fear Data', process.logTimer(timeId));
+        process.log.info('Fear Data', process.logTimer(timeId));
         const _d = data || [];
         return _d.map(item => {
             item.date = item.timestamp * 1000;

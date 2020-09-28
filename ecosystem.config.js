@@ -6,7 +6,7 @@
 module.exports = {
     apps: [
         {
-            name: 'server',
+            name: 'Server',
             script: 'app.js',
             args: '',
             instances: 1,
@@ -14,7 +14,7 @@ module.exports = {
             watch: false,
             min_uptime: 10000,
             max_restarts: 5,
-            max_memory_restart: '200M',
+            max_memory_restart: '100M',
             env: {
                 NODE_ENV: 'development',
                 NODE_PATH: './'
@@ -25,15 +25,15 @@ module.exports = {
             }
         },
         {
-            name: 'record',
-            script: 'volume.js',
+            name: 'Record',
+            script: 'appRecord.js',
             args: '',
             instances: 1,
             autorestart: true,
             watch: false,
             min_uptime: 10000,
             max_restarts: 5,
-            max_memory_restart: '200M',
+            max_memory_restart: '100M',
             env: {
                 NODE_ENV: 'development',
                 NODE_PATH: './'
