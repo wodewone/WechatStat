@@ -5,17 +5,26 @@ const checkValid = (_path) => {
     return fs.readdirSync(_path).find(name => name === 'index.js');
 };
 
+/**
+ * 生成路由配置
+ * @param dirPath
+ * @returns {*[{path=routePath,route=routeName}]}
+ */
 const getRouterTree = (dirPath) => {
     const dir = fs.readdirSync(dirPath);
-    return dir.reduce((so, name) => {
-        const _path = path.join(dirPath, name);
+    return dir.reduce((so, file) => {
+        const _path = path.join(dirPath, file);
         if (fs.statSync(_path).isDirectory()) {
             const child = getRouterTree(_path);
+            const route = file.replace('_', ':');
             if (child.length) {
-                const fullPath = child.map(c => name + '/' + c);
-                so.push(...fullPath);
+                const pathList = child.map(next => ({
+                    "file": file + '/' + next.file,
+                    "route": route + '/' + next.route,
+                }));
+                so.push(...pathList);
             } else {
-                so.push(name);
+                so.push({file, route});
             }
         }
         return so;
@@ -33,8 +42,8 @@ module.exports = (dirPath = __dirname) => {
         return false;
     }
 
-    return getRouterTree(dirPath).filter(_path => {
-        const _p = path.join(dirPath, _path);
+    return getRouterTree(dirPath).filter(({file}) => {
+        const _p = path.join(dirPath, file);
         return checkValid(_p);
     });
 };

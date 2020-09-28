@@ -9,8 +9,8 @@ const router = new Router({
 const routeRootPath = __dirname;
 const routerList = routerConfig(routeRootPath);
 
-routerList.forEach(route => {
-    const routePath = path.join(routeRootPath, route);
+routerList.forEach(({file, route}) => {
+    const routePath = path.join(routeRootPath, file);
     const middleware = require(routePath);
     try {
         router.get(route, middleware);

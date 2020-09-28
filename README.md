@@ -21,6 +21,72 @@ https://app.pm2.io/
 
 - 2020-08-24 增加数据库存储数据（Mongodb）
 
+### Structure Tree
+
+```bash
+WechatStat
+├─README.md
+├─app.js
+├─appRecord.js
+├─ecosystem.config.js
+├─package-lock.json
+├─package.json
+├─server
+|   ├─config.js
+|   ├─index.js
+|   ├─mixins.js
+|   ├─volume
+|   |   ├─getVolume.js
+|   |   ├─index.js
+|   |   ├─old.js
+|   |   ├─otc
+|   |   |  ├─202009
+|   |   |  |   └20200918.json
+|   |   ├─data
+|   |   |  ├─202009
+|   |   |  |   └20200918.json
+|   ├─otc
+|   |  └index.js
+|   ├─market
+|   |   ├─ACCESS_TOKEN.dog
+|   |   └index.js
+|   ├─fear
+|   |  ├─ACCESS_TOKEN.dog
+|   |  └index.js
+|   ├─charts
+|   |   └makeCharts.js
+├─router
+|   ├─README.md
+|   ├─index.js
+|   ├─router.config.js
+|   ├─hb
+|   | ├─_type
+|   | |   └index.js
+|   ├─get
+|   |  ├─wx-media
+|   |  |    └index.js
+|   |  ├─chart
+|   |  |   └index.js
+├─plugin
+|   ├─database.js
+|   ├─f2Charts.js
+|   ├─mongodb.js
+|   ├─prefix.js
+|   ├─utils.js
+|   ├─upload2wx
+|   |     ├─ACCESS_TOKEN.dog
+|   |     ├─accessToken.js
+|   |     └index.js
+├─execute
+|    ├─database.js
+|    ├─pm2demo.js
+|    ├─server.js
+|    └volume.js
+├─config
+|   └index.js
+
+```
+
 ### Record
 
 [Node Chart工具](https://itbilu.com/nodejs/npm/BkCASacpm.html)

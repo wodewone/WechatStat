@@ -1,5 +1,5 @@
 const server = {
-    PORT: 80,
+    PORT: 8088
 };
 
 const wechatConfig = {
