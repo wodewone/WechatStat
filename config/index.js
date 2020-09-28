@@ -1,5 +1,5 @@
 const server = {
-    PORT: 8088,
+    PORT: 80,
 };
 
 const wechatConfig = {
@@ -10,7 +10,12 @@ const wechatConfig = {
     checkSignature: true, // 可选，默认为true。由于微信公众平台接口调试工具在明>文模式下不发送签名，所以如要使用该测试工具，请将其设置为false
 };
 
+const staticServer = {
+    HOME: process.env.production ? '/home/www/' : '/Users/liuzuoquan/Huobi/github/wodewone.github.io',
+};
+
 module.exports = {
     wechatConfig,
     server,
+    staticServer
 };

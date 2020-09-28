@@ -104,7 +104,7 @@ const mixins = {
                 },
             };
         } else {
-            return '[Warn] Marke image faild!';
+            return 'Sorry,Make image failed!';
         }
     },
 };
