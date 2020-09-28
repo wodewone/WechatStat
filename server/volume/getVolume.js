@@ -57,12 +57,7 @@ const VOLUME = {
     async getVolData(force) {
         try {
             const list = HBVOLURL.map(url => axios.get(`https://${url}/-/x/pro/v1/hbg/get/volume`).catch());
-            const {data: {data}} = await Promise.race(list).catch((e) => {
-                if (!force) {
-                    process.log.error('getVolData', 'force=1 ', e);
-                    return this.getVolData(1);
-                }
-            });
+            const {data: {data} = {}} = await Promise.race(list).catch(() => ({}));
             if (data) {
                 return data;
             }
@@ -72,13 +67,8 @@ const VOLUME = {
     },
     async getOtcData(force) {
         try {
-            const list = HBOTCURL.map(url => axios.get(`https://${url}/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general`));
-            const {data: {data}} = await Promise.race(list).catch((e) => {
-                if (!force) {
-                    process.log.error('getOtcData', 'force=1 ', e);
-                    return this.getOtcData(1);
-                }
-            });
+            const list = HBOTCURL.map(url => axios.get(`https://${url}/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general`).catch());
+            const {data: {data} = {}} = await Promise.race(list).catch(() => ({}));
             if (data && data.length) {
                 const {price} = data[0] || {};
                 if (price) {

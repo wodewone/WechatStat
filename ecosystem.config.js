@@ -14,7 +14,7 @@ module.exports = {
             watch: false,
             min_uptime: 10000,
             max_restarts: 5,
-            max_memory_restart: '100M',
+            max_memory_restart: '150M',
             env: {
                 NODE_ENV: 'development',
                 NODE_PATH: './'
@@ -33,7 +33,7 @@ module.exports = {
             watch: false,
             min_uptime: 10000,
             max_restarts: 5,
-            max_memory_restart: '100M',
+            max_memory_restart: '150M',
             env: {
                 NODE_ENV: 'development',
                 NODE_PATH: './'
