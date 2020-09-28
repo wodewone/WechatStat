@@ -11,11 +11,13 @@ const _interface = require('./router');
 
 const app = new koa();
 
-// 静态资源服务
-app.use(serve(HOME, {extensions: 'index.html'}));
+// app.use 顺序不能改
 
 // wechat serve
 app.use(_wechat.routes());
+
+// 静态资源服务
+app.use(serve(HOME, {extensions: 'index.html'}));
 
 // http serve
 app.use(_interface.routes()).use(_interface.allowedMethods());
