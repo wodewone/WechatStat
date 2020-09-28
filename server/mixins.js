@@ -16,7 +16,7 @@ const mixins = {
     async getChartImgPath(data = [], filename) {
         const timeId = process.logTimer();
         const {pathname} = await f2chart(data, filename);
-        process.log.info('chart img path', process.logTimer(timeId));
+        process.log.info('getChartImgPath', process.logTimer(timeId));
         return pathname;
     },
 
@@ -31,7 +31,7 @@ const mixins = {
      */
     handlerChartData(list = [], {x = 'date', y = 'data', type = '--', formatter} = {}) {
         if (!list || !list.length) {
-            process.log.error('handler chart data', 'Params [list] must be Array type: ', JSON.stringify(list));
+            process.log.error('handlerChartData', 'Params [list] must be Array type: ', JSON.stringify(list));
             return [];
         }
         formatter = typeof formatter === 'function' ? formatter : null;

@@ -25,12 +25,10 @@ const drawChart = ({data, width, height, pixelRatio}) => {
         date: {
             type: 'timeCat',
             range: [0, 1],
-            tickCount: 3,
         },
         data: {
             type: 'linear',
-            alias: '日均值',
-            formatter(value, index) {
+            formatter(value) {
                 return numeral(value).format('0.00 a');
             },
         }
@@ -64,7 +62,7 @@ const drawChart = ({data, width, height, pixelRatio}) => {
  */
 module.exports = async (data = [], filename = '') => {
     const pixelRatio = 2;
-    const width = 400 * pixelRatio;
+    const width = 400 * pixelRatio + Math.min(data.length * 0.5, 300);
     const height = 267 * pixelRatio;
     let bgCanvas = Canvas.createCanvas(width, height);
     const bgContext = bgCanvas.getContext('2d');
