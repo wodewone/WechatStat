@@ -84,8 +84,9 @@ WechatStat
 |    └volume.js
 ├─config
 |   └index.js
-
 ```
+
+`treer -i "/^node_modules|chartsImg|^\.[\w+]/"`
 
 ### Record
 
