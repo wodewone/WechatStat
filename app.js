@@ -11,11 +11,11 @@ const _interface = require('./router');
 
 const app = new koa();
 
+// wechat 微信公众号路由需要在静态资源服务前面，否则影响微信验证
+app.use(_wechat.routes());
+
 // 静态资源服务
 app.use(serve(HOME, {extensions: 'index.html'}));
-
-// wechat serve
-app.use(_wechat.routes());
 
 // http serve
 app.use(_interface.routes()).use(_interface.allowedMethods());
