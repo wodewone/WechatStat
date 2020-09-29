@@ -1,27 +1,30 @@
-### README
+## README
 
 使用微信公众号查看统计数据
 需先申请微信公众号（类型不限，个人，企业均可）
 
 ## START
 
-启动进程文件
+需要全局安装 pm2  
+`npm install -g pm2`
 
-```npm i```
-本地开发
-```npm run dev```
+启动进程文件  
+`npm i`
 
-生产环境
-```npm run prd```
+本地开发  
+`npm run dev`
 
-在线查看 PM2 运行状态
-https://app.pm2.io/
+生产环境  
+`npm run prd`
 
-### Update
+> 在线查看 PM2 运行状态  
+> https://app.pm2.io/
+
+## Update
 
 - 2020-08-24 增加数据库存储数据（Mongodb）
 
-### Structure Tree
+## Structure Tree
 
 ```bash
 WechatStat
@@ -88,7 +91,7 @@ WechatStat
 
 `treer -i "/^node_modules|chartsImg|^\.[\w+]/"`
 
-### Record
+## Record
 
 [Node Chart工具](https://itbilu.com/nodejs/npm/BkCASacpm.html)
 
@@ -98,7 +101,9 @@ WechatStat
 
 [关于Node进程管理器PM2使用技巧和需要注意的地方](https://github.com/jawil/blog/issues/7)
 
-### API 
+[【koa2 Restful API 脚手架】](https://github.com/NeoyeElf/koa2-rest-scaffold)
+
+## API 
 [【PM2】](https://pm2.keymetrics.io/docs/usage/pm2-doc-single-page/)
 
 [【mongodb docs】]( https://docs.mongodb.com/v4.2/reference/method/js-collection/)
@@ -109,9 +114,12 @@ WechatStat
 
 [【mongodb 中文 docs】]( https://www.docs4dev.com/docs/zh/mongodb/v3.6/reference/reference-method-db.collection.find.html)
 
-### Question
 
-1. HTTP 返回图片不存储直接返回 stream
+***
+
+## Question
+
+##### 1. HTTP 返回图片不存储直接返回 stream
 
 canvas画图表保存成图片，然后 http 请求返回图片类型  
 `/v1/get/chart?limit=100&type=volume`  
@@ -123,7 +131,7 @@ canvas画图表保存成图片，然后 http 请求返回图片类型
 > 详见 `./router/get/chart/index.js`
 
 
-2. NODE require本地模块使用 '绝对路径'
+#### 2. NODE require本地模块使用 '绝对路径'
 
 大多范例中 `node` 模块会使用**相对路径**基于当前当前文件进行引用，  
 但是实际中这样使用很不方便，尤其引用的路径嵌套比较深  
