@@ -1,8 +1,8 @@
 module.exports = async (ctx) => {
     const {params: {type}, query: {limit, chart}} = ctx;
-    const {getData, getChartData} = require(`server/${type}`);
+    const serve = require(`server/${type}`);
     if (chart)
-        ctx.body = await getData(limit);
+        ctx.body = await serve.getChartData(limit);
     else
-        ctx.body = await getChartData(limit)
+        ctx.body = await serve.getData(limit);
 };
