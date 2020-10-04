@@ -37,7 +37,7 @@ const mkChart = (data) => {
 };
 
 const {getData} = require('server/volume');
-module.export = async (ctx) => {
+module.exports = async (ctx) => {
     process.log.info('route/get/chart/market');
     const {query: {limit} = {}} = ctx;
     const _data = await getData(limit);

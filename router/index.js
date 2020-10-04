@@ -15,7 +15,7 @@ routerList.forEach(({file, route}) => {
     try {
         router.get(route, middleware);
     } catch (e) {
-        process.log.warn('router/index', 'middleware not found: ', routePath);
+        process.log.warn('router/index', e);
     }
 });
 
