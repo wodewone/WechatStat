@@ -104,7 +104,7 @@ const mixins = {
                 },
             };
         } else {
-            process.config.warn('getWxMedia', 'mediaId error: ', mediaId);
+            process.log.warn('getWxMedia', 'mediaId error: ', mediaId);
             return 'Sorry,Make image failed!';
         }
     },

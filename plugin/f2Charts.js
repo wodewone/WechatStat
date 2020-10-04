@@ -5,9 +5,9 @@ const F2 = require('@antv/f2/lib/core');
 
 require('@antv/f2/lib/geom/line');                          // 加载折线图
 require('@antv/f2/lib/component/guide');                    // 加载 guide 组件
-const Guide = require('@antv/f2/lib/plugin/guide');        // Guide 插件
-const Legend = require('@antv/f2/lib/plugin/legend');      // Legend 插件
-F2.Chart.plugins.register([Legend, Guide]);        // 注册以上插件
+const Guide = require('@antv/f2/lib/plugin/guide');         // Guide 插件
+const Legend = require('@antv/f2/lib/plugin/legend');       // Legend 插件
+F2.Chart.plugins.register([Legend, Guide]);                // 注册以上插件
 F2.Global.setTheme({
     fontFamily: 'PingFang SC',
 });
