@@ -2,6 +2,8 @@ const F2 = require('@antv/f2/lib/core');
 const Canvas = require('canvas');
 const numeral = require('numeral');
 
+require('@antv/f2/lib/geom/schema');
+
 const mkChart = (data) => {
     const pixelRatio = 2;
     const width = 400 * pixelRatio + Math.min(data.length * 0.5, 300);
@@ -12,7 +14,7 @@ const mkChart = (data) => {
         context,
         width,
         height,
-        pixelRatio
+        // pixelRatio
     });
 
     chart.source(data, {
@@ -39,7 +41,7 @@ const mkChart = (data) => {
 const {getData} = require('server/volume');
 module.exports = async (ctx) => {
     process.log.info('route/get/chart/market');
-    const {query: {limit} = {}} = ctx;
+    const {query: {limit = 150} = {}} = ctx;
     const _data = await getData(limit);
     _data.forEach(item => {
         const {open, close, high, low} = item;
@@ -47,5 +49,6 @@ module.exports = async (ctx) => {
         item.trend = open <= close ? 0 : 1;
     }, []);
     const canvas = mkChart(_data);
+    ctx.set('content-type', 'image/png');
     ctx.body = canvas.createPNGStream();
 };

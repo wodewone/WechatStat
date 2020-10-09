@@ -17,14 +17,15 @@ const getRouterTree = (dirPath) => {
         if (fs.statSync(_path).isDirectory()) {
             const child = getRouterTree(_path);
             const route = file.replace('_', ':');
+            if (checkValid(_path)) {
+                so.push({file, route});
+            }
             if (child.length) {
                 const pathList = child.map(next => ({
                     "file": file + '/' + next.file,
                     "route": route + '/' + next.route,
-                }));
+                })).filter(({file}) => checkValid(path.join(dirPath, file)));
                 so.push(...pathList);
-            } else {
-                so.push({file, route});
             }
         }
         return so;
@@ -41,9 +42,5 @@ module.exports = (dirPath = __dirname) => {
     if (!dir || !dir.length) {
         return false;
     }
-
-    return getRouterTree(dirPath).filter(({file}) => {
-        const _p = path.join(dirPath, file);
-        return checkValid(_p);
-    });
+    return getRouterTree(dirPath);
 };

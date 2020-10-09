@@ -3,7 +3,7 @@ const f2chart = require('plugin/f2Charts');
 
 module.exports = async (ctx) => {
     process.logTimer('makeImg');
-    const {query: {limit, type = 'vol'} = {}} = ctx;
+    const {query: {limit, type = 'volume'} = {}} = ctx;
 
     try {
         const [list] = await getTypeChartImg(type, limit, true);
