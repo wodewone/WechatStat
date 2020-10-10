@@ -86,7 +86,8 @@ const mixins = {
         }
         if (type === 'market') {
             const getChartMarket = require('server/charts/market');
-            return getChartMarket(limit, filename);
+            const {pathname} = getChartMarket(limit, filename);
+            return pathname;
         } else {
             const _l = await mixins.getTypeChartData(type, limit);
             return mixins.getChartImgPath(_l, filename);
@@ -94,7 +95,6 @@ const mixins = {
     },
 
     async _uploadWx(filepath, retry) {
-        console.info(1911, filepath);
         const upload2wx = require('plugin/upload2wx');
         const mediaId = await upload2wx(filepath).catch(e => {
             process.log.warn('getWxMedia', e);
