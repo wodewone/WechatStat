@@ -31,7 +31,6 @@ const mixins = {
      */
     handlerChartData(list = [], {x = 'date', y = 'data', type = '--', formatter} = {}) {
         if (!list || !list.length) {
-            process.log.error('handlerChartData', 'Params [list] must be Array type: ', JSON.stringify(list));
             return [];
         }
         formatter = typeof formatter === 'function' ? formatter : null;
@@ -85,17 +84,34 @@ const mixins = {
         if (filePath) {
             return filePath;
         }
-        const _l = await mixins.getTypeChartData(type, limit);
-        return mixins.getChartImgPath(_l, filename);
+        if (type === 'market') {
+            const getChartMarket = require('server/charts/market');
+            return getChartMarket(limit, filename);
+        } else {
+            const _l = await mixins.getTypeChartData(type, limit);
+            return mixins.getChartImgPath(_l, filename);
+        }
     },
 
-
-    async getWxMedia(type, limit) {
-        const pathname = await mixins.getTypeChartImgCache(type, limit);
+    async _uploadWx(filepath, retry) {
+        console.info(1911, filepath);
         const upload2wx = require('plugin/upload2wx');
-        const mediaId = await upload2wx(pathname).catch(e => {
+        const mediaId = await upload2wx(filepath).catch(e => {
             process.log.warn('getWxMedia', e);
         });
+        if (mediaId) {
+            return mediaId;
+        } else {
+            if (!retry) {
+                return await mixins._uploadWx(filepath, 1);
+            }
+            process.log.error('_uploadWx', 'mediaId error: ', mediaId);
+        }
+    },
+
+    async getWxMedia(type, limit) {
+        const filepath = await mixins.getTypeChartImgCache(type, limit);
+        const mediaId = await mixins._uploadWx(filepath);
         if (mediaId) {
             return {
                 type: "image",
@@ -104,7 +120,6 @@ const mixins = {
                 },
             };
         } else {
-            process.log.warn('getWxMedia', 'mediaId error: ', mediaId);
             return 'Sorry,Make image failed!';
         }
     },

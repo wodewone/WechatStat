@@ -33,7 +33,9 @@ const drawChart = ({data, width, height, pixelRatio}) => {
             },
         }
     });
-    chart.legend();
+    chart.legend({
+        align: 'left',
+    });
     chart.axis('date', {
         label(text, index, total) {
             const textCfg = {};
@@ -46,7 +48,7 @@ const drawChart = ({data, width, height, pixelRatio}) => {
         }
     });
     chart.line().position('date*data').color('type');
-    chart.point().position('date*data').size(2);
+    // chart.point().position('date*data').size(2);
     chart.render();
     return canvas;
 };
@@ -75,9 +77,9 @@ module.exports = async (data = [], filename = '') => {
         bgContext.drawImage(chartCanvas, 0, 0);
     }
 
-    const {chartImgPath} = require('server/mixins');
-    const pathname = chartImgPath + filename;
     if (filename) {
+        const {chartImgPath} = require('server/mixins');
+        const pathname = chartImgPath + filename;
         await bgCanvas.createPNGStream().pipe(fs.createWriteStream(pathname));
         return {
             filename,
