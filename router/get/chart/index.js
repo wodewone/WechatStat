@@ -6,11 +6,9 @@ module.exports = async (ctx) => {
     const {query: {limit, type = 'volume'} = {}} = ctx;
 
     try {
-        const [list] = await getTypeChartImg(type, limit, true);
-        const canvas = await f2chart(list);
-        ctx.body = canvas.createPNGStream();
-        ctx.set('content-type', 'image/jpeg');
         ctx.status = 200;
+        ctx.set('content-type', 'image/jpeg');
+        ctx.body = await getTypeChartImg(type, limit);
         process.log.info('/get/chart', `[${type}]`, process.logTimer('makeImg'));
     } catch (e) {
         ctx.status = 500;

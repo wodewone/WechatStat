@@ -63,29 +63,34 @@ module.exports = async (data = [], filename = '') => {
     const pixelRatio = 2;
     const width = 400 * pixelRatio + Math.min(data.length * 0.5, 300);
     const height = 267 * pixelRatio;
-    let bgCanvas = Canvas.createCanvas(width, height);
-    const bgContext = bgCanvas.getContext('2d');
+    let canvas = Canvas.createCanvas(width, height);
+    const context = canvas.getContext('2d');
     const chartCanvas = drawChart({data, width, height});
 
     const fileType = filename.split('.')[1];
     const transparent = fileType === 'png';
     if (transparent) {
-        bgCanvas = chartCanvas;
+        canvas = chartCanvas;
     } else {
-        bgContext.fillStyle = '#fff';
-        bgContext.fillRect(0, 0, width, height);
-        bgContext.drawImage(chartCanvas, 0, 0);
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, width, height);
+        context.drawImage(chartCanvas, 0, 0);
     }
 
     if (filename) {
         const {chartImgPath} = require('server/mixins');
         const pathname = chartImgPath + filename;
-        await bgCanvas.createPNGStream().pipe(fs.createWriteStream(pathname));
-        return {
-            filename,
-            pathname
-        };
+        const outStream = fs.createWriteStream(pathname);
+        canvas.createPNGStream().pipe(outStream);
+        return new Promise((resolve) => {
+            outStream.on('finish', () => {
+                resolve({
+                    filename,
+                    pathname
+                })
+            })
+        });
     } else {
-        return bgCanvas;
+        return canvas.createPNGStream();
     }
 };

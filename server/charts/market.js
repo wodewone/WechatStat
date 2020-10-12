@@ -76,11 +76,16 @@ module.exports = getChartMarket = async (limit, filename) => {
     if (filename) {
         const {chartImgPath} = require('server/mixins');
         const pathname = chartImgPath + filename;
-        await canvas.createPNGStream().pipe(fs.createWriteStream(pathname));
-        return {
-            filename,
-            pathname
-        };
+        const outStream = fs.createWriteStream(pathname);
+        canvas.createPNGStream().pipe(outStream);
+        return new Promise((resolve) => {
+            outStream.on('finish', () => {
+                resolve({
+                    filename,
+                    pathname
+                })
+            })
+        });
     }
-    return canvas;
+    return canvas.createPNGStream();
 };

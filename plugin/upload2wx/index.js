@@ -1,27 +1,21 @@
 const fs = require('fs');
-const rp = require('request-promise');
+const fetch = require('request-promise');
 const {getWxToken} = require('./accessToken');
 
 // 上传png图到微信临时空间，获得media_id
-module.exports = async (imgPathName) => {
-    const logTimeId = process.logTimer();
-    const form = {
-        smfile: fs.createReadStream(imgPathName),
-    };
-    let token = await getWxToken();
-    let opt = {
-        // uri: `https://sm.ms/api/upload`,   // 上传到图床
-        uri: `https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=image`,   // 上传到微信临时素材
-        method: 'POST',
-        formData: form,
-        headers: {
-            'User-Agent': 'Request-Promise',
-        },
+// axios
+// {
+//     errcode: 41005,
+//     errmsg: 'media data missing hint: [dYFmga04150021] rid: 5f83f4d7-0533f43c-01030ec0',
+// }
+module.exports = async (filepath) => {
+    const token = await getWxToken();
+    const media = fs.createReadStream(filepath);
+    const {media_id} = await fetch.post({
+        url: `https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=image`,
         json: true,
-    };
-    let {media_id} = await rp(opt).catch(e => {
-        process.log.warn('plugin/upload2wx', e);
-    });
-    process.log.info('plugin/upload2wx', process.logTimer(logTimeId));
+        formData: {media}
+    }).catch(e => process.log.warn('plugin/upload2wx', e));
+    // const data = await axios.post(`https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=image`, {media}).catch(e => process.log.warn('plugin/upload2wx', e));
     return media_id;
 };

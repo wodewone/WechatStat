@@ -4,7 +4,7 @@
     "description": "",
     "main": "app.js",
     "scripts": {
-        "dev": "pm2-dev start ecosystem.config.js --ignore chartsImg",
+        "dev": "pm2-dev start ecosystem.config.js --ignore chartsImg,plugin/upload2wx",
         "stg": "pm2 startOrRestart ecosystem.config.js --env development",
         "prd": "pm2 startOrRestart ecosystem.config.js --env production"
     },

@@ -188,3 +188,23 @@ require('plugin/test1/test1.js')
 
 > ~简单直观  
 > pm2 可以在配置文件中添加，详见 `./ecosystem.config.js`
+
+#### 3. Axios Node 上传文件不能使用 'FormData'
+
+相关问题：  
+[公众号开发 调用【上传图文消息内的图片获取URL】接口时，返回 412 错误？](https://developers.weixin.qq.com/community/develop/doc/00000ef32dc64883d9d93f31f56800)
+
+```javascript
+{
+  // `data` 是作为请求主体被发送的数据
+  // 只适用于这些请求方法 'PUT', 'POST', 和 'PATCH'
+  // 在没有设置 `transformRequest` 时，必须是以下类型之一：
+  // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
+  // - 浏览器专属：FormData, File, Blob
+  // - Node 专属： Stream
+  data: {
+    firstName: 'Fred'
+  },
+}
+```
+https://www.kancloud.cn/yunye/axios/234845

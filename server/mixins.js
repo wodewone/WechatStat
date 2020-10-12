@@ -15,9 +15,13 @@ const mixins = {
      */
     async getChartImgPath(data = [], filename) {
         const timeId = process.logTimer();
-        const {pathname} = await f2chart(data, filename);
-        process.log.info('getChartImgPath', process.logTimer(timeId));
-        return pathname;
+        if (filename) {
+            const {pathname} = await f2chart(data, filename);
+            process.log.info('getChartImgPath', process.logTimer(timeId));
+            return pathname;
+        } else {
+            return f2chart(data);
+        }
     },
 
     /**
@@ -73,9 +77,13 @@ const mixins = {
     },
 
     async getTypeChartImg(type, limit) {
-        const _l = await mixins.getTypeChartData(type, limit);
-        const filename = mixins.chartImgName({date: +new Date()});
-        return [_l, filename];
+        if (type === 'market') {
+            const getChartMarket = require('server/charts/market');
+            return getChartMarket(limit);
+        } else {
+            const _l = await mixins.getTypeChartData(type, limit);
+            return mixins.getChartImgPath(_l);
+        }
     },
 
     async getTypeChartImgCache(type, limit) {
@@ -86,7 +94,7 @@ const mixins = {
         }
         if (type === 'market') {
             const getChartMarket = require('server/charts/market');
-            const {pathname} = getChartMarket(limit, filename);
+            const {pathname} = await getChartMarket(limit, filename);
             return pathname;
         } else {
             const _l = await mixins.getTypeChartData(type, limit);
@@ -96,9 +104,7 @@ const mixins = {
 
     async _uploadWx(filepath, retry) {
         const upload2wx = require('plugin/upload2wx');
-        const mediaId = await upload2wx(filepath).catch(e => {
-            process.log.warn('getWxMedia', e);
-        });
+        const mediaId = await upload2wx(filepath).catch(e => process.log.warn('getWxMedia', e));
         if (mediaId) {
             return mediaId;
         } else {
