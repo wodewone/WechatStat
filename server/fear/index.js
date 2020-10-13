@@ -8,7 +8,7 @@ module.exports = fear = {
         return _d.map(item => {
             item.date = item.timestamp * 1000;
             return item;
-        });
+        }).reverse();
     },
     async getChartData(limit) {
         const {handlerChartData} = require('server/mixins');
