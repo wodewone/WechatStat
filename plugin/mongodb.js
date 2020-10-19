@@ -14,7 +14,6 @@ module.exports = {
     instance: async (dbName = 'huobi', force = false) => {
         const st = +new Date();
         if (!dbInstance[dbName] || force) {
-            process.log.info('MongoDb', `Start connection [${dbName}]`);
             try {
                 // const URL = 'mongodb://localhost:27017/' + dbName;
                 const URL = `mongodb+srv://root:root@huobi.l4yiu.mongodb.net/${dbName}?retryWrites=true&w=majority`;
