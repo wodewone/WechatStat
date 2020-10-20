@@ -10,9 +10,9 @@ const routeRootPath = __dirname;
 const routerList = routerConfig(routeRootPath);
 
 routerList.forEach(({file, route}) => {
-    const routePath = path.join(routeRootPath, file);
-    const middleware = require(routePath);
     try {
+        const routePath = path.join(routeRootPath, file);
+        const middleware = require(routePath);
         router.get(route, middleware);
     } catch (e) {
         process.log.warn('router/index', e);
