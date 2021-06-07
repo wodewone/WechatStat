@@ -11,7 +11,7 @@ const wechatConfig = {
 };
 
 const staticServer = {
-    HOME: process.env.production ? '/home/www/' : '/Users/liuzuoquan/Huobi/github/wodewone.github.io',
+    HOME: process.env.production ? '/home/www/' : '../../wodewone.github.io',
 };
 
 module.exports = {
