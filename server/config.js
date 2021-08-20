@@ -1,5 +1,6 @@
 module.exports = {
     HBVOLURL: [
+        'www.huobi.bo',
         'www.huobi.ge',
         'www.huobi.pe',
         'www.huobi.fm',
