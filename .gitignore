@@ -12,3 +12,4 @@ node_modules/
 chartsImg
 /server/volume/data/*
 /server/volume/otc/*
+conan-wechat.memory-card.json

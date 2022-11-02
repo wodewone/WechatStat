@@ -58,6 +58,7 @@ const VOLUME = {
         try {
             const list = HBVOLURL.map(url => axios.get(`https://${url}/-/x/pro/v1/hbg/get/volume`).catch());
             const {data: {data} = {}} = await Promise.race(list).catch(() => ({}));
+            console.info(99990061, data);
             if (data) {
                 return data;
             }
@@ -69,6 +70,7 @@ const VOLUME = {
         try {
             const list = HBOTCURL.map(url => axios.get(`https://${url}/v1/data/trade-market?coinId=2&currency=1&tradeType=sell&country=37&blockType=general`).catch());
             const {data: {data} = {}} = await Promise.race(list).catch(() => ({}));
+            console.info(99990073, data);
             if (data && data.length) {
                 const {price} = data[0] || {};
                 if (price) {

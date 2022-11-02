@@ -43,6 +43,25 @@ module.exports = {
                 NODE_PATH: './'
             }
         },
+        {
+            name: 'WechatBot',
+            script: './wechat/index.js',
+            args: '',
+            instances: 1,
+            autorestart: false,
+            watch: false,
+            min_uptime: 60000,
+            max_restarts: 5,
+            max_memory_restart: '250M',
+            env: {
+                NODE_ENV: 'development',
+                NODE_PATH: './'
+            },
+            env_production: {
+                NODE_ENV: 'production',
+                NODE_PATH: './'
+            }
+        },
     ],
 
     deploy: {

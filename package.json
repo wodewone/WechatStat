@@ -24,10 +24,17 @@
         "moment": "^2.24.0",
         "mongodb": "^3.6.0",
         "numeral": "^2.0.6",
+        "qrcode-terminal": "^0.12.0",
         "request": "^2.88.2",
-        "request-promise": "^4.2.4"
+        "request-promise": "^4.2.4",
+        "wechaty": "^1.20.2",
+        "wechaty-puppet-wechat": "^1.18.4"
     },
     "devDependencies": {
         "koa-router": "^7.4.0"
+    },
+    "engines": {
+        "node": ">=16",
+        "npm": ">=7"
     }
 }

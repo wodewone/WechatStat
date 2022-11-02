@@ -4,7 +4,7 @@ const wechat = require('co-wechat');
 const {wechatConfig} = require('config');
 const {getWxMedia} = require('./mixins');
 
-const server_url = `http://'118.24.53.67:8090/wechat`;
+const server_url = `http://118.24.53.67:8090/wechat`;
 const router = new Router();
 
 const getChartImg = async (type, limit) => {
